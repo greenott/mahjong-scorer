@@ -16,11 +16,11 @@ export function Tile({ tile, onClick, selected, className = '' }: TileProps) {
             onClick={onClick}
             className={`
         relative
-        w-[5rem] h-[7rem] md:w-24 md:h-36 
+        w-[4rem] h-[5.5rem] md:w-20 md:h-28 
         bg-[#fdfcf5]  
         rounded-lg 
         flex items-center justify-center 
-        text-8xl md:text-[8rem] 
+        text-7xl md:text-[6rem] 
         cursor-pointer 
         transition-all duration-200
         select-none
@@ -37,7 +37,7 @@ export function Tile({ tile, onClick, selected, className = '' }: TileProps) {
             <div className="absolute inset-0 bg-gradient-to-br from-white/80 to-transparent rounded-lg pointer-events-none" />
 
             <span className={`
-                relative z-10 transform scale-[3] md:scale-[3.5] origin-center 
+                relative z-10 transform scale-[2.5] md:scale-[3] origin-center 
                 ${tile.type === 'man' ? 'text-[#8a1c1c]' :
                     tile.type === 'sou' ? 'text-[#1c5c2e]' :
                         tile.type === 'pin' ? 'text-[#1c3d5c]' :
