@@ -543,12 +543,16 @@ export default function Home() {
                     </div>
                 </div>
 
+                {/* Spacer block to guarantee a minimum visual distance between Hand Area and Controls */}
+                <div className="w-full h-12 md:h-16" aria-hidden="true"></div>
+
                 {/* Hand Action Controls & Settings */}
-                <section className="relative max-w-7xl mx-auto pt-8 md:pt-12 mt-4 md:mt-8">
+                <section className="relative max-w-7xl mx-auto pt-8 border-t border-[#ffffff]/10 before:content-[''] before:absolute before:inset-x-0 before:top-0 before:h-px before:bg-gradient-to-r before:from-transparent before:via-[#d4af37]/20 before:to-transparent mt-4">
+
                     {/* Furo Action Menu (Shows when tiles are selected) */}
                     {
                         selectedTiles.length >= 3 && (
-                            <div className="absolute top-2 md:top-6 left-1/2 -translate-x-1/2 z-20 flex gap-2 p-2 bg-[#1a1a1a] rounded-lg border border-[#d4af37]/30 shadow-2xl animate-in slide-in-from-top-4">
+                            <div className="absolute -top-6 left-1/2 -translate-x-1/2 z-20 flex gap-2 p-2 bg-[#1a1a1a] rounded-lg border border-[#d4af37]/30 shadow-2xl animate-in slide-in-from-top-4">
                                 <button onClick={() => declareFuro('chi')} className="px-4 py-2 bg-[#2d3a35] hover:bg-[#3e524b] text-[#a3b8b0] hover:text-white rounded transition">치 (Chi)</button>
                                 <button onClick={() => declareFuro('pon')} className="px-4 py-2 bg-[#2d3a35] hover:bg-[#3e524b] text-[#a3b8b0] hover:text-white rounded transition">퐁 (Pon)</button>
                                 <button onClick={() => declareFuro('kan')} className="px-4 py-2 bg-[#2d3a35] hover:bg-[#3e524b] text-[#a3b8b0] hover:text-white rounded transition">명깡 (Kan)</button>
@@ -559,7 +563,7 @@ export default function Home() {
                     }
 
                     {/* Controls */}
-                    <div className="flex justify-center gap-4">
+                    <div className="flex justify-center gap-4 mt-6 md:mt-8">
                         <button
                             onClick={clearHand}
                             className="px-6 py-4 md:py-3 text-lg md:text-base bg-[#4a0e0e] hover:bg-[#6b1616] text-[#e8e8e3] rounded-lg font-medium transition-all shadow-lg hover:shadow-red-900/40 active:translate-y-1 border-b-4 border-[#2d0808] active:border-b-0"
