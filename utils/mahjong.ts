@@ -160,6 +160,23 @@ export function handToRiichiString(hand: Tile[], status?: HandStatus, furoSets?:
     if (options) {
       result += '+' + options;
     }
+
+    // 4. Append Dora specifically if doraCount > 0
+    if (status.doraCount > 0 && hand.length > 0) {
+      const doraTiles = hand.slice(0, Math.min(hand.length, status.doraCount));
+      const dGroups: Record<string, string[]> = { man: [], pin: [], sou: [], honors: [] };
+      doraTiles.forEach(t => dGroups[t.type].push(t.value));
+
+      let doraStr = '';
+      if (dGroups.man.length > 0) doraStr += dGroups.man.join('') + 'm';
+      if (dGroups.pin.length > 0) doraStr += dGroups.pin.join('') + 'p';
+      if (dGroups.sou.length > 0) doraStr += dGroups.sou.join('') + 's';
+      if (dGroups.honors.length > 0) doraStr += dGroups.honors.join('') + 'z';
+
+      if (doraStr) {
+        result += '+d' + doraStr;
+      }
+    }
   }
 
   return result;

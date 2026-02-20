@@ -266,21 +266,6 @@ export default function Home() {
             const finalYaku = { ...baseScore.yaku };
             let finalHan = baseScore.han;
 
-            if (handStatus.doraCount > 0 && baseScore.isAgari && baseScore.han > 0) {
-                finalYaku['Dora'] = `${handStatus.doraCount}飜`;
-                finalHan += handStatus.doraCount;
-
-                // Recalculate Ten based on new Han (Simplified approximation for now: 
-                // Normally riichi package limits mangan/haneman based on han+dora. 
-                // We'd ideally need a full scoring table or rely on the riichi package's internal dora parser.
-                // Since the riichi package uses +d1s format, it might be better to just let the lib do it, 
-                // but we only know "count" not specific tiles.
-                // We will add the dora text and just adjust if needed, but for perfect accuracy 
-                // we should ideally pass specific tiles to the riichi lib options.)
-                // For this MVP, we just display the Dora in the Yaku list. Note that points might not scale to Mangan automatically 
-                // if we don't implement the full table here.
-            }
-
             // Special Yaku Bonuses
             if (baseScore.isAgari && baseScore.han > 0) {
                 // Ippatsu (only if Riichi is declared)
