@@ -24,6 +24,10 @@ export interface HandStatus {
   riichi: 0 | 1 | 2; // 0: None, 1: Riichi, 2: Double Riichi
   doraCount: number;
   honba: number;
+  isIppatsu: boolean;
+  isChankan: boolean;
+  isRinshan: boolean;
+  isHaiteiHoutei: boolean;
 }
 
 export const TILES: Omit<Tile, 'id'>[] = [

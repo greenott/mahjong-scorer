@@ -160,6 +160,10 @@ export default function Home() {
         riichi: 0,
         doraCount: 0,
         honba: 0,
+        isIppatsu: false,
+        isChankan: false,
+        isRinshan: false,
+        isHaiteiHoutei: false,
     });
 
     const [furoSets, setFuroSets] = useState<Furo[]>([]);
@@ -270,6 +274,37 @@ export default function Home() {
                 // if we don't implement the full table here.
             }
 
+            // Special Yaku Bonuses
+            if (baseScore.isAgari && baseScore.han > 0) {
+                // Ippatsu (only if Riichi is declared)
+                if (handStatus.isIppatsu && handStatus.riichi > 0) {
+                    finalYaku['Ippatsu'] = '1飜';
+                    finalHan += 1;
+                }
+
+                // Chankan (only if Ron)
+                if (handStatus.isChankan && handStatus.winType === 'ron') {
+                    finalYaku['Chankan'] = '1飜';
+                    finalHan += 1;
+                }
+
+                // Rinshan (typically after Kan, so realistically Tsumo, but we'll apply +1 if checked)
+                if (handStatus.isRinshan) {
+                    finalYaku['Rinshan'] = '1飜';
+                    finalHan += 1;
+                }
+
+                // Haitei / Houtei
+                if (handStatus.isHaiteiHoutei) {
+                    if (handStatus.winType === 'tsumo') {
+                        finalYaku['Haitei'] = '1飜';
+                    } else {
+                        finalYaku['Houtei'] = '1飜';
+                    }
+                    finalHan += 1;
+                }
+            }
+
             // Honba Adjustment
             // Tsumo: +100 per honba per player (Total +300 for Tsumo, or +300 for Ron)
             if (handStatus.honba > 0 && finalTen > 0) {
@@ -366,7 +401,11 @@ export default function Home() {
                             <div className="flex items-center justify-between bg-[#1a2320] p-3 rounded-lg">
                                 <label className="text-sm text-[#a3b8b0] font-semibold">리치 (Riichi)</label>
                                 <div className="flex gap-2">
-                                    <button onClick={() => setHandStatus({ ...handStatus, riichi: 0 })} className={`px-3 py-2 md:py-1.5 rounded-md transition text-base md:text-sm ${handStatus.riichi === 0 ? 'bg-[#2d3a35] text-white' : 'text-[#a3b8b0]'}`}>없음</button>
+                                    <button onClick={() => {
+                                        let updated = { ...handStatus, riichi: 0 as 0 | 1 | 2 };
+                                        if (handStatus.isIppatsu) updated.isIppatsu = false; // Disable Ippatsu if Riichi is turned off
+                                        setHandStatus(updated);
+                                    }} className={`px-3 py-2 md:py-1.5 rounded-md transition text-base md:text-sm ${handStatus.riichi === 0 ? 'bg-[#2d3a35] text-white' : 'text-[#a3b8b0]'}`}>없음</button>
                                     <button onClick={() => setHandStatus({ ...handStatus, riichi: 1 })} className={`px-3 py-2 md:py-1.5 rounded-md transition text-base md:text-sm ${handStatus.riichi === 1 ? 'bg-[#8a1c1c] text-white font-bold' : 'text-[#a3b8b0]'}`}>리치</button>
                                     <button onClick={() => setHandStatus({ ...handStatus, riichi: 2 })} className={`px-3 py-2 md:py-1.5 rounded-md transition text-base md:text-sm ${handStatus.riichi === 2 ? 'bg-[#8a1c1c] text-white font-bold' : 'text-[#a3b8b0]'}`}>더블 리치</button>
                                 </div>
@@ -392,12 +431,71 @@ export default function Home() {
                             </div>
                         </div>
                     </div>
+
+                    {/* Additional Yaku Options */}
+                    <div className="mt-6 pt-6 border-t border-[#ffffff]/10">
+                        <h3 className="text-sm text-[#a3b8b0] uppercase tracking-wider font-semibold mb-4">판수 보너스 옵션</h3>
+                        <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+                            <label className={`flex items-center gap-2 p-3 rounded-lg border transition cursor-pointer ${handStatus.riichi > 0 ? (handStatus.isIppatsu ? 'bg-[#2d3a35] border-[#d4af37]/50' : 'bg-[#1a2320] border-transparent hover:border-[#ffffff]/20') : 'opacity-50 cursor-not-allowed bg-[#1a2320] border-transparent'}`}>
+                                <input
+                                    type="checkbox"
+                                    disabled={handStatus.riichi === 0}
+                                    checked={handStatus.isIppatsu}
+                                    onChange={(e) => setHandStatus({ ...handStatus, isIppatsu: e.target.checked })}
+                                    className="w-5 h-5 accent-[#d4af37]"
+                                />
+                                <div className="flex flex-col">
+                                    <span className="font-semibold text-[#e8e8e3]">일발</span>
+                                    <span className="text-xs text-[#d4af37]">+1판</span>
+                                </div>
+                            </label>
+
+                            <label className={`flex items-center gap-2 p-3 rounded-lg border transition cursor-pointer ${handStatus.winType === 'ron' ? (handStatus.isChankan ? 'bg-[#2d3a35] border-[#d4af37]/50' : 'bg-[#1a2320] border-transparent hover:border-[#ffffff]/20') : 'opacity-50 cursor-not-allowed bg-[#1a2320] border-transparent'}`}>
+                                <input
+                                    type="checkbox"
+                                    disabled={handStatus.winType !== 'ron'}
+                                    checked={handStatus.isChankan}
+                                    onChange={(e) => setHandStatus({ ...handStatus, isChankan: e.target.checked })}
+                                    className="w-5 h-5 accent-[#d4af37]"
+                                />
+                                <div className="flex flex-col">
+                                    <span className="font-semibold text-[#e8e8e3]">창깡</span>
+                                    <span className="text-xs text-[#d4af37]">+1판</span>
+                                </div>
+                            </label>
+
+                            <label className={`flex items-center gap-2 p-3 rounded-lg border transition cursor-pointer ${handStatus.isRinshan ? 'bg-[#2d3a35] border-[#d4af37]/50' : 'bg-[#1a2320] border-transparent hover:border-[#ffffff]/20'}`}>
+                                <input
+                                    type="checkbox"
+                                    checked={handStatus.isRinshan}
+                                    onChange={(e) => setHandStatus({ ...handStatus, isRinshan: e.target.checked })}
+                                    className="w-5 h-5 accent-[#d4af37]"
+                                />
+                                <div className="flex flex-col">
+                                    <span className="font-semibold text-[#e8e8e3]">영상개화</span>
+                                    <span className="text-xs text-[#d4af37]">+1판</span>
+                                </div>
+                            </label>
+
+                            <label className={`flex items-center gap-2 p-3 rounded-lg border transition cursor-pointer ${handStatus.isHaiteiHoutei ? 'bg-[#2d3a35] border-[#d4af37]/50' : 'bg-[#1a2320] border-transparent hover:border-[#ffffff]/20'}`}>
+                                <input
+                                    type="checkbox"
+                                    checked={handStatus.isHaiteiHoutei}
+                                    onChange={(e) => setHandStatus({ ...handStatus, isHaiteiHoutei: e.target.checked })}
+                                    className="w-5 h-5 accent-[#d4af37]"
+                                />
+                                <div className="flex flex-col">
+                                    <span className="font-semibold text-[#e8e8e3]">해저/하저</span>
+                                    <span className="text-xs text-[#d4af37]">+1판</span>
+                                </div>
+                            </label>
+                        </div>
+                    </div>
                 </section>
 
                 {/* Hand Area (The Rack) */}
 
                 <section className="relative">
-
 
                     {/* Wood Rail Container */}
                     <div className="bg-[#3e2723] p-4 rounded-xl shadow-[0_10px_30px_rgba(0,0,0,0.5),inset_0_2px_5px_rgba(255,255,255,0.1)] border-b-8 border-[#2d1b18]">
@@ -433,18 +531,20 @@ export default function Home() {
                                 </div>
                             )}
                         </div>
-                    </div>
+                    </div >
 
                     {/* Furo Action Menu (Shows when tiles are selected) */}
-                    {selectedTiles.length >= 3 && (
-                        <div className="absolute top-full left-1/2 -translate-x-1/2 mt-4 z-20 flex gap-2 p-2 bg-[#1a1a1a] rounded-lg border border-[#d4af37]/30 shadow-2xl animate-in slide-in-from-top-4">
-                            <button onClick={() => declareFuro('chi')} className="px-4 py-2 bg-[#2d3a35] hover:bg-[#3e524b] text-[#a3b8b0] hover:text-white rounded transition">치 (Chi)</button>
-                            <button onClick={() => declareFuro('pon')} className="px-4 py-2 bg-[#2d3a35] hover:bg-[#3e524b] text-[#a3b8b0] hover:text-white rounded transition">퐁 (Pon)</button>
-                            <button onClick={() => declareFuro('kan')} className="px-4 py-2 bg-[#2d3a35] hover:bg-[#3e524b] text-[#a3b8b0] hover:text-white rounded transition">명깡 (Kan)</button>
-                            <button onClick={() => declareFuro('ankan')} className="px-4 py-2 bg-[#2d3a35] hover:bg-[#3e524b] text-[#a3b8b0] hover:text-white rounded transition">안깡 (Ankan)</button>
-                            <button onClick={() => setSelectedTiles([])} className="px-4 py-2 bg-[#4a0e0e] hover:bg-[#6b1616] text-[#e8e8e3] rounded transition ml-2">취소</button>
-                        </div>
-                    )}
+                    {
+                        selectedTiles.length >= 3 && (
+                            <div className="absolute top-full left-1/2 -translate-x-1/2 mt-4 z-20 flex gap-2 p-2 bg-[#1a1a1a] rounded-lg border border-[#d4af37]/30 shadow-2xl animate-in slide-in-from-top-4">
+                                <button onClick={() => declareFuro('chi')} className="px-4 py-2 bg-[#2d3a35] hover:bg-[#3e524b] text-[#a3b8b0] hover:text-white rounded transition">치 (Chi)</button>
+                                <button onClick={() => declareFuro('pon')} className="px-4 py-2 bg-[#2d3a35] hover:bg-[#3e524b] text-[#a3b8b0] hover:text-white rounded transition">퐁 (Pon)</button>
+                                <button onClick={() => declareFuro('kan')} className="px-4 py-2 bg-[#2d3a35] hover:bg-[#3e524b] text-[#a3b8b0] hover:text-white rounded transition">명깡 (Kan)</button>
+                                <button onClick={() => declareFuro('ankan')} className="px-4 py-2 bg-[#2d3a35] hover:bg-[#3e524b] text-[#a3b8b0] hover:text-white rounded transition">안깡 (Ankan)</button>
+                                <button onClick={() => setSelectedTiles([])} className="px-4 py-2 bg-[#4a0e0e] hover:bg-[#6b1616] text-[#e8e8e3] rounded transition ml-2">취소</button>
+                            </div>
+                        )
+                    }
 
                     {/* Controls */}
                     <div className="mt-6 flex justify-center gap-4">
@@ -466,96 +566,100 @@ export default function Home() {
                         </button>
                     </div>
 
-                    {error && (
-                        <div className="mt-6 mx-auto max-w-md p-4 bg-red-900/80 backdrop-blur-sm border border-red-500/30 rounded-lg text-red-100 flex items-center justify-center gap-3 animate-pulse shadow-lg">
-                            <span>⚠️</span> {error}
-                        </div>
-                    )}
-                </section>
+                    {
+                        error && (
+                            <div className="mt-6 mx-auto max-w-md p-4 bg-red-900/80 backdrop-blur-sm border border-red-500/30 rounded-lg text-red-100 flex items-center justify-center gap-3 animate-pulse shadow-lg">
+                                <span>⚠️</span> {error}
+                            </div>
+                        )
+                    }
+                </section >
 
                 {/* Result Modal - Overlay Style */}
-                {result && (
-                    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-md animate-in fade-in duration-300" onClick={() => setResult(null)}>
-                        <div className="bg-[#1a1a1a] max-w-4xl w-full rounded-2xl border border-[#d4af37]/50 shadow-[0_0_50px_rgba(212,175,55,0.2)] overflow-hidden relative" onClick={e => e.stopPropagation()}>
+                {
+                    result && (
+                        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-md animate-in fade-in duration-300" onClick={() => setResult(null)}>
+                            <div className="bg-[#1a1a1a] max-w-4xl w-full rounded-2xl border border-[#d4af37]/50 shadow-[0_0_50px_rgba(212,175,55,0.2)] overflow-hidden relative" onClick={e => e.stopPropagation()}>
 
-                            {/* Close Button */}
-                            <button onClick={() => setResult(null)} className="absolute top-4 right-4 text-[#a3b8b0] hover:text-white transition-colors">
-                                <svg xmlns="http://www.w3.org/2000/svg" className="h-8 w-8" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-                                </svg>
-                            </button>
+                                {/* Close Button */}
+                                <button onClick={() => setResult(null)} className="absolute top-4 right-4 text-[#a3b8b0] hover:text-white transition-colors">
+                                    <svg xmlns="http://www.w3.org/2000/svg" className="h-8 w-8" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                                    </svg>
+                                </button>
 
-                            <div className="bg-gradient-to-r from-[#2d1b18] to-[#3e2723] p-8 border-b border-[#d4af37]/30">
-                                <h3 className="text-3xl font-bold bg-gradient-to-r from-[#d4af37] to-[#f7e7ce] bg-clip-text text-transparent drop-shadow-sm text-center mb-4">
-                                    {result.name ? (YakuNameMap[result.name] || result.name) : '점수 없음'}
-                                </h3>
-                            </div>
-
-                            <div className="p-8 grid md:grid-cols-5 gap-8 bg-[#0f281e] relative">
-                                <div className="absolute inset-0 opacity-10 pointer-events-none" style={{ backgroundImage: 'var(--felt-texture)' }}></div>
-
-                                <div className="md:col-span-3 space-y-6 relative z-10">
-                                    <div className="bg-black/30 p-8 rounded-xl border border-[#d4af37]/20 text-center backdrop-blur-sm">
-                                        <p className="text-[#d4af37]/80 uppercase tracking-widest text-sm font-semibold mb-2">총 점수</p>
-                                        <div className="text-7xl md:text-8xl font-black text-[#d4af37] drop-shadow-[0_0_15px_rgba(212,175,55,0.4)]">
-                                            {result.ten > 0 ? result.ten.toLocaleString() : 0}
-                                            <span className="text-3xl text-[#a3b8b0] ml-2 font-light">점</span>
-                                        </div>
-                                    </div>
-
-                                    <div className="bg-black/30 rounded-xl border border-[#ffffff]/10 overflow-hidden backdrop-blur-sm">
-                                        <div className="bg-[#ffffff]/5 px-6 py-3 text-lg font-semibold text-[#a3b8b0] flex items-center gap-2">
-                                            <span>📜</span> 적용된 역 (Yaku)
-                                        </div>
-                                        {result.yaku && Object.keys(result.yaku).length > 0 ? (
-                                            <ul className="divide-y divide-[#ffffff]/10">
-                                                {Object.entries(result.yaku).map(([name, han]) => (
-                                                    <li key={name} className="flex justify-between items-center px-6 py-4 hover:bg-[#ffffff]/5 transition-colors">
-                                                        <span className="font-bold text-xl text-[#e8e8e3]">{translateYaku(name)}</span>
-                                                        <span className="font-mono text-[#d4af37] bg-[#d4af37]/10 px-3 py-1 rounded border border-[#d4af37]/20">{String(han)} 판</span>
-                                                    </li>
-                                                ))}
-                                            </ul>
-                                        ) : (
-                                            <div className="p-8 text-center text-[#a3b8b0] italic">적용된 역이 없습니다.</div>
-                                        )}
-                                    </div>
+                                <div className="bg-gradient-to-r from-[#2d1b18] to-[#3e2723] p-8 border-b border-[#d4af37]/30">
+                                    <h3 className="text-3xl font-bold bg-gradient-to-r from-[#d4af37] to-[#f7e7ce] bg-clip-text text-transparent drop-shadow-sm text-center mb-4">
+                                        {result.name ? (YakuNameMap[result.name] || result.name) : '점수 없음'}
+                                    </h3>
                                 </div>
 
-                                <div className="md:col-span-2 flex flex-col gap-6 relative z-10">
-                                    <div className="bg-gradient-to-br from-[#2d3a35] to-[#1a2320] p-8 rounded-xl border border-[#ffffff]/10 shadow-lg flex-1 flex flex-col justify-center space-y-8">
-                                        <div className="flex justify-center gap-12 mt-8 text-[#d4af37]/90 text-xl font-light border-t border-[#d4af37]/20 pt-6 w-full max-w-md mx-auto">
-                                            <div className="flex flex-col items-center">
-                                                <span className="text-5xl font-serif font-bold text-[#f7e7ce] mb-1 drop-shadow-[0_2px_4px_rgba(0,0,0,0.5)]">
-                                                    {/* Mangan/Yakuman usually doesn't show han/fu in same way, but user wants it displayed. 
+                                <div className="p-8 grid md:grid-cols-5 gap-8 bg-[#0f281e] relative">
+                                    <div className="absolute inset-0 opacity-10 pointer-events-none" style={{ backgroundImage: 'var(--felt-texture)' }}></div>
+
+                                    <div className="md:col-span-3 space-y-6 relative z-10">
+                                        <div className="bg-black/30 p-8 rounded-xl border border-[#d4af37]/20 text-center backdrop-blur-sm">
+                                            <p className="text-[#d4af37]/80 uppercase tracking-widest text-sm font-semibold mb-2">총 점수</p>
+                                            <div className="text-7xl md:text-8xl font-black text-[#d4af37] drop-shadow-[0_0_15px_rgba(212,175,55,0.4)]">
+                                                {result.ten > 0 ? result.ten.toLocaleString() : 0}
+                                                <span className="text-3xl text-[#a3b8b0] ml-2 font-light">점</span>
+                                            </div>
+                                        </div>
+
+                                        <div className="bg-black/30 rounded-xl border border-[#ffffff]/10 overflow-hidden backdrop-blur-sm">
+                                            <div className="bg-[#ffffff]/5 px-6 py-3 text-lg font-semibold text-[#a3b8b0] flex items-center gap-2">
+                                                <span>📜</span> 적용된 역 (Yaku)
+                                            </div>
+                                            {result.yaku && Object.keys(result.yaku).length > 0 ? (
+                                                <ul className="divide-y divide-[#ffffff]/10">
+                                                    {Object.entries(result.yaku).map(([name, han]) => (
+                                                        <li key={name} className="flex justify-between items-center px-6 py-4 hover:bg-[#ffffff]/5 transition-colors">
+                                                            <span className="font-bold text-xl text-[#e8e8e3]">{translateYaku(name)}</span>
+                                                            <span className="font-mono text-[#d4af37] bg-[#d4af37]/10 px-3 py-1 rounded border border-[#d4af37]/20">{String(han)} 판</span>
+                                                        </li>
+                                                    ))}
+                                                </ul>
+                                            ) : (
+                                                <div className="p-8 text-center text-[#a3b8b0] italic">적용된 역이 없습니다.</div>
+                                            )}
+                                        </div>
+                                    </div>
+
+                                    <div className="md:col-span-2 flex flex-col gap-6 relative z-10">
+                                        <div className="bg-gradient-to-br from-[#2d3a35] to-[#1a2320] p-8 rounded-xl border border-[#ffffff]/10 shadow-lg flex-1 flex flex-col justify-center space-y-8">
+                                            <div className="flex justify-center gap-12 mt-8 text-[#d4af37]/90 text-xl font-light border-t border-[#d4af37]/20 pt-6 w-full max-w-md mx-auto">
+                                                <div className="flex flex-col items-center">
+                                                    <span className="text-5xl font-serif font-bold text-[#f7e7ce] mb-1 drop-shadow-[0_2px_4px_rgba(0,0,0,0.5)]">
+                                                        {/* Mangan/Yakuman usually doesn't show han/fu in same way, but user wants it displayed. 
                                         If 'han' is undefined (e.g. limit hand), fall back to logic or standard 13/etc if possible, or just hide if truly N/A?
                                         User said "make it displayed even if not displayed". 
                                         Often limit hands imply Han, but riichi lib output structure varies.
                                         Let's just show whatever result has, or '-' if absolutely missing, but usually result.han is there.
                                     */}
-                                                    {result.han !== undefined ? result.han : (result.name === 'Yakuman' ? '13' : '-')}
-                                                </span>
-                                                <span className="text-sm uppercase tracking-widest opacity-70">판 (Han)</span>
+                                                        {result.han !== undefined ? result.han : (result.name === 'Yakuman' ? '13' : '-')}
+                                                    </span>
+                                                    <span className="text-sm uppercase tracking-widest opacity-70">판 (Han)</span>
+                                                </div>
+                                                <div className="w-px bg-[#d4af37]/30 h-16 self-center"></div>
+                                                <div className="flex flex-col items-center">
+                                                    <span className="text-5xl font-serif font-bold text-[#f7e7ce] mb-1 drop-shadow-[0_2px_4px_rgba(0,0,0,0.5)]">
+                                                        {result.fu !== undefined ? result.fu : '-'}
+                                                    </span>
+                                                    <span className="text-sm uppercase tracking-widest opacity-70">부 (Fu)</span>
+                                                </div>
                                             </div>
-                                            <div className="w-px bg-[#d4af37]/30 h-16 self-center"></div>
-                                            <div className="flex flex-col items-center">
-                                                <span className="text-5xl font-serif font-bold text-[#f7e7ce] mb-1 drop-shadow-[0_2px_4px_rgba(0,0,0,0.5)]">
-                                                    {result.fu !== undefined ? result.fu : '-'}
-                                                </span>
-                                                <span className="text-sm uppercase tracking-widest opacity-70">부 (Fu)</span>
-                                            </div>
+                                            {result.text && (
+                                                <div className="text-sm text-[#a3b8b0] font-mono mt-4 pt-4 border-t border-[#ffffff]/10 leading-relaxed break-all bg-black/20 p-4 rounded-lg">
+                                                    {result.text}
+                                                </div>
+                                            )}
                                         </div>
-                                        {result.text && (
-                                            <div className="text-sm text-[#a3b8b0] font-mono mt-4 pt-4 border-t border-[#ffffff]/10 leading-relaxed break-all bg-black/20 p-4 rounded-lg">
-                                                {result.text}
-                                            </div>
-                                        )}
                                     </div>
                                 </div>
                             </div>
                         </div>
-                    </div>
-                )}
+                    )
+                }
 
                 {/* Tile Selection Palette */}
                 <section className="grid grid-cols-1 gap-8">
@@ -578,11 +682,11 @@ export default function Home() {
                         </div>
                     ))}
                 </section>
-            </div>
+            </div >
 
             <footer className="text-center text-[#a3b8b0]/40 text-sm pb-8 font-light tracking-widest uppercase">
                 Mahjong Scorer &copy; {new Date().getFullYear()}
             </footer>
-        </main>
+        </main >
     );
 }
