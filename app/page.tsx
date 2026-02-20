@@ -555,15 +555,28 @@ export default function Home() {
                             <span>🧮</span> 점수 계산
                         </button>
                     </div>
+                </section>
 
-                    {
-                        error && (
-                            <div className="mt-6 mx-auto max-w-md p-4 bg-red-900/80 backdrop-blur-sm border border-red-500/30 rounded-lg text-red-100 flex items-center justify-center gap-3 animate-pulse shadow-lg">
-                                <span>⚠️</span> {error}
+                {/* Error Modal */}
+                {
+                    error && (
+                        <div className="fixed inset-0 z-[60] flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm animate-in fade-in duration-200" onClick={() => setError(null)}>
+                            <div className="bg-[#1a1a1a] max-w-md w-full rounded-2xl border border-[#ff4444]/50 shadow-[0_0_50px_rgba(255,68,68,0.2)] overflow-hidden relative p-8 text-center" onClick={e => e.stopPropagation()}>
+                                <button onClick={() => setError(null)} className="absolute top-4 right-4 text-[#a3b8b0] hover:text-white transition-colors">
+                                    <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                                    </svg>
+                                </button>
+                                <div className="text-5xl mb-4">⚠️</div>
+                                <h3 className="text-xl font-bold text-[#ff4444] mb-2">계산 실패</h3>
+                                <p className="text-[#e8e8e3] font-light leading-relaxed">{error}</p>
+                                <button onClick={() => setError(null)} className="mt-8 px-6 py-2 bg-[#ff4444]/20 hover:bg-[#ff4444]/30 text-[#ff4444] rounded-lg transition-colors border border-[#ff4444]/30">
+                                    확인
+                                </button>
                             </div>
-                        )
-                    }
-                </section >
+                        </div>
+                    )
+                }
 
                 {/* Result Modal - Overlay Style */}
                 {
@@ -620,12 +633,6 @@ export default function Home() {
                                             <div className="flex justify-center gap-12 mt-8 text-[#d4af37]/90 text-xl font-light border-t border-[#d4af37]/20 pt-6 w-full max-w-md mx-auto">
                                                 <div className="flex flex-col items-center">
                                                     <span className="text-5xl font-serif font-bold text-[#f7e7ce] mb-1 drop-shadow-[0_2px_4px_rgba(0,0,0,0.5)]">
-                                                        {/* Mangan/Yakuman usually doesn't show han/fu in same way, but user wants it displayed. 
-                                        If 'han' is undefined (e.g. limit hand), fall back to logic or standard 13/etc if possible, or just hide if truly N/A?
-                                        User said "make it displayed even if not displayed". 
-                                        Often limit hands imply Han, but riichi lib output structure varies.
-                                        Let's just show whatever result has, or '-' if absolutely missing, but usually result.han is there.
-                                    */}
                                                         {result.han !== undefined ? result.han : (result.name === 'Yakuman' ? '13' : '-')}
                                                     </span>
                                                     <span className="text-sm uppercase tracking-widest opacity-70">판 (Han)</span>
