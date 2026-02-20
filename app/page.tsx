@@ -207,6 +207,12 @@ export default function Home() {
     };
 
     const toggleTileSelection = (id: string) => {
+        // If the clicked tile is the very last tile added to the hand, simply remove it
+        if (hand.length > 0 && hand[hand.length - 1].id === id) {
+            removeFromHand(id);
+            return;
+        }
+
         if (selectedTiles.includes(id)) {
             setSelectedTiles(selectedTiles.filter(tId => tId !== id));
         } else {
