@@ -544,11 +544,11 @@ export default function Home() {
                 </div>
 
                 {/* Hand Action Controls & Settings */}
-                <section className="relative max-w-7xl mx-auto pt-2">
+                <section className="relative max-w-7xl mx-auto pt-8 md:pt-12 mt-4 md:mt-8">
                     {/* Furo Action Menu (Shows when tiles are selected) */}
                     {
                         selectedTiles.length >= 3 && (
-                            <div className="absolute -top-6 left-1/2 -translate-x-1/2 mt-4 z-20 flex gap-2 p-2 bg-[#1a1a1a] rounded-lg border border-[#d4af37]/30 shadow-2xl animate-in slide-in-from-top-4">
+                            <div className="absolute top-2 md:top-6 left-1/2 -translate-x-1/2 z-20 flex gap-2 p-2 bg-[#1a1a1a] rounded-lg border border-[#d4af37]/30 shadow-2xl animate-in slide-in-from-top-4">
                                 <button onClick={() => declareFuro('chi')} className="px-4 py-2 bg-[#2d3a35] hover:bg-[#3e524b] text-[#a3b8b0] hover:text-white rounded transition">치 (Chi)</button>
                                 <button onClick={() => declareFuro('pon')} className="px-4 py-2 bg-[#2d3a35] hover:bg-[#3e524b] text-[#a3b8b0] hover:text-white rounded transition">퐁 (Pon)</button>
                                 <button onClick={() => declareFuro('kan')} className="px-4 py-2 bg-[#2d3a35] hover:bg-[#3e524b] text-[#a3b8b0] hover:text-white rounded transition">명깡 (Kan)</button>
