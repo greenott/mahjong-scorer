@@ -3,7 +3,7 @@
 
 import { useState } from 'react';
 import { Tile as TileComponent } from '@/components/Tile';
-import { TILES, Tile, handToRiichiString } from '@/utils/mahjong';
+import { TILES, Tile, handToRiichiString, HandStatus, Furo, FuroType } from '@/utils/mahjong';
 
 import Riichi from 'riichi';
 
@@ -153,6 +153,18 @@ export default function Home() {
     const [result, setResult] = useState<ScoreResult | null>(null); // To store scoring result
     const [error, setError] = useState<string | null>(null);
 
+    const [handStatus, setHandStatus] = useState<HandStatus>({
+        winType: 'tsumo',
+        windField: 1, // East
+        windPlayer: 1, // East
+        riichi: 0,
+        doraCount: 0,
+        honba: 0,
+    });
+
+    const [furoSets, setFuroSets] = useState<Furo[]>([]);
+    const [selectedTiles, setSelectedTiles] = useState<string[]>([]); // To track tiles selected for making a set
+
     // Group tiles by type for display
     const tilesByType = {
         man: TILES.filter(t => t.type === 'man'),
@@ -176,8 +188,46 @@ export default function Home() {
     };
 
     const removeFromHand = (id: string) => {
+        // If the tile is part of a furo set, do not allow removing individually, or remove the whole set.
+        // For simplicity, we just remove it and clean up any furo set it belonged to.
         setHand(hand.filter(t => t.id !== id));
+        setFuroSets(furoSets.map(set => ({
+            ...set,
+            tiles: set.tiles.filter(t => t.id !== id)
+        })).filter(set => set.tiles.length >= 3)); // Keep set only if it still has at least 3 tiles (simplistic approach)
+
+        setSelectedTiles(selectedTiles.filter(tId => tId !== id));
         setResult(null);
+        setError(null);
+    };
+
+    const toggleTileSelection = (id: string) => {
+        if (selectedTiles.includes(id)) {
+            setSelectedTiles(selectedTiles.filter(tId => tId !== id));
+        } else {
+            setSelectedTiles([...selectedTiles, id]);
+        }
+    };
+
+    const declareFuro = (type: FuroType) => {
+        if (selectedTiles.length < 3) {
+            setError('치, 퐁, 깡을 선언하려면 최소 3개의 패를 선택해야 합니다.');
+            return;
+        }
+
+        const tilesToSet = hand.filter(t => selectedTiles.includes(t.id));
+
+        // Mark tiles as open
+        const updatedHand = hand.map(t => {
+            if (selectedTiles.includes(t.id)) {
+                return { ...t, isOpen: true };
+            }
+            return t;
+        });
+
+        setHand(updatedHand);
+        setFuroSets([...furoSets, { type, tiles: tilesToSet }]);
+        setSelectedTiles([]);
         setError(null);
     };
 
@@ -189,14 +239,55 @@ export default function Home() {
 
 
         try {
-            const riichiString = handToRiichiString(hand);
+            const riichiString = handToRiichiString(hand, handStatus, furoSets);
             console.log('Riichi Input:', riichiString);
-            const score = new Riichi(riichiString).calc();
-            setResult(score);
+
+            // Generate base score from riichi
+            const baseScore = new Riichi(riichiString).calc();
+
+            if (baseScore.error) {
+                setError('계산 실패. 패가 유효한 역이 없거나 구성이 잘못되었습니다.');
+                return;
+            }
+
+            // Post-process Dora and Honba
+            let finalTen = baseScore.ten;
+            const finalYaku = { ...baseScore.yaku };
+            let finalHan = baseScore.han;
+
+            if (handStatus.doraCount > 0 && baseScore.isAgari && baseScore.han > 0) {
+                finalYaku['Dora'] = `${handStatus.doraCount}飜`;
+                finalHan += handStatus.doraCount;
+
+                // Recalculate Ten based on new Han (Simplified approximation for now: 
+                // Normally riichi package limits mangan/haneman based on han+dora. 
+                // We'd ideally need a full scoring table or rely on the riichi package's internal dora parser.
+                // Since the riichi package uses +d1s format, it might be better to just let the lib do it, 
+                // but we only know "count" not specific tiles.
+                // We will add the dora text and just adjust if needed, but for perfect accuracy 
+                // we should ideally pass specific tiles to the riichi lib options.)
+                // For this MVP, we just display the Dora in the Yaku list. Note that points might not scale to Mangan automatically 
+                // if we don't implement the full table here.
+            }
+
+            // Honba Adjustment
+            // Tsumo: +100 per honba per player (Total +300 for Tsumo, or +300 for Ron)
+            if (handStatus.honba > 0 && finalTen > 0) {
+                finalTen += (handStatus.honba * 300);
+            }
+
+            setResult({
+                ...baseScore,
+                yaku: finalYaku,
+                han: finalHan,
+                ten: finalTen
+            });
+            setError(null);
+
         } catch (e: unknown) { // Use unknown for safety
 
             console.error(e);
-            setError('계산 실패. 패가 유효하지 않을 수 있습니다.');
+            setError('계산 중 오류가 발생했습니다.');
         }
     };
 
@@ -234,7 +325,77 @@ export default function Home() {
                     </p>
                 </header>
 
+                {/* Match Settings Panel */}
+                <section className="bg-[#0f281e]/40 p-4 md:p-6 rounded-2xl border border-[#ffffff]/5 shadow-lg max-w-4xl mx-auto space-y-6">
+                    <h2 className="text-xl font-bold text-[#d4af37] border-b border-[#ffffff]/10 pb-2 flex items-center gap-2">
+                        <span>⚙️</span> 대국 설정
+                    </h2>
+
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        {/* Winds & Win Type */}
+                        <div className="space-y-4">
+                            <div className="flex flex-col gap-2">
+                                <label className="text-sm text-[#a3b8b0] uppercase tracking-wider font-semibold">장풍 (Field Wind)</label>
+                                <div className="flex bg-[#1a2320] rounded-lg p-1">
+                                    <button onClick={() => setHandStatus({ ...handStatus, windField: 1 })} className={`flex-1 py-2 rounded-md transition ${handStatus.windField === 1 ? 'bg-[#d4af37] text-black font-bold' : 'text-[#a3b8b0] hover:bg-[#2d3a35]'}`}>동 (East)</button>
+                                    <button onClick={() => setHandStatus({ ...handStatus, windField: 2 })} className={`flex-1 py-2 rounded-md transition ${handStatus.windField === 2 ? 'bg-[#d4af37] text-black font-bold' : 'text-[#a3b8b0] hover:bg-[#2d3a35]'}`}>남 (South)</button>
+                                </div>
+                            </div>
+
+                            <div className="flex flex-col gap-2">
+                                <label className="text-sm text-[#a3b8b0] uppercase tracking-wider font-semibold">자풍 (Seat Wind)</label>
+                                <div className="flex bg-[#1a2320] rounded-lg p-1 text-sm">
+                                    <button onClick={() => setHandStatus({ ...handStatus, windPlayer: 1 })} className={`flex-1 py-2 rounded-md transition ${handStatus.windPlayer === 1 ? 'bg-[#d4af37] text-black font-bold' : 'text-[#a3b8b0] hover:bg-[#2d3a35]'}`}>동 (친)</button>
+                                    <button onClick={() => setHandStatus({ ...handStatus, windPlayer: 2 })} className={`flex-1 py-2 rounded-md transition ${handStatus.windPlayer === 2 ? 'bg-[#d4af37] text-black font-bold' : 'text-[#a3b8b0] hover:bg-[#2d3a35]'}`}>남 (자)</button>
+                                    <button onClick={() => setHandStatus({ ...handStatus, windPlayer: 3 })} className={`flex-1 py-2 rounded-md transition ${handStatus.windPlayer === 3 ? 'bg-[#d4af37] text-black font-bold' : 'text-[#a3b8b0] hover:bg-[#2d3a35]'}`}>서 (자)</button>
+                                    <button onClick={() => setHandStatus({ ...handStatus, windPlayer: 4 })} className={`flex-1 py-2 rounded-md transition ${handStatus.windPlayer === 4 ? 'bg-[#d4af37] text-black font-bold' : 'text-[#a3b8b0] hover:bg-[#2d3a35]'}`}>북 (자)</button>
+                                </div>
+                            </div>
+                        </div>
+
+                        {/* Modifiers & Counters */}
+                        <div className="space-y-4">
+                            <div className="flex items-center justify-between bg-[#1a2320] p-3 rounded-lg">
+                                <label className="text-sm text-[#a3b8b0] font-semibold">화료 방법 (Win Type)</label>
+                                <div className="flex gap-2">
+                                    <button onClick={() => setHandStatus({ ...handStatus, winType: 'tsumo' })} className={`px-4 py-1.5 rounded-md transition text-sm ${handStatus.winType === 'tsumo' ? 'bg-[#2d3a35] text-[#d4af37] border border-[#d4af37]/50' : 'text-[#a3b8b0]'}`}>쯔모 (Tsumo)</button>
+                                    <button onClick={() => setHandStatus({ ...handStatus, winType: 'ron' })} className={`px-4 py-1.5 rounded-md transition text-sm ${handStatus.winType === 'ron' ? 'bg-[#2d3a35] text-[#d4af37] border border-[#d4af37]/50' : 'text-[#a3b8b0]'}`}>론 (Ron)</button>
+                                </div>
+                            </div>
+
+                            <div className="flex items-center justify-between bg-[#1a2320] p-3 rounded-lg">
+                                <label className="text-sm text-[#a3b8b0] font-semibold">리치 (Riichi)</label>
+                                <div className="flex gap-2">
+                                    <button onClick={() => setHandStatus({ ...handStatus, riichi: 0 })} className={`px-3 py-1.5 rounded-md transition text-sm ${handStatus.riichi === 0 ? 'bg-[#2d3a35] text-white' : 'text-[#a3b8b0]'}`}>없음</button>
+                                    <button onClick={() => setHandStatus({ ...handStatus, riichi: 1 })} className={`px-3 py-1.5 rounded-md transition text-sm ${handStatus.riichi === 1 ? 'bg-[#8a1c1c] text-white font-bold' : 'text-[#a3b8b0]'}`}>리치</button>
+                                    <button onClick={() => setHandStatus({ ...handStatus, riichi: 2 })} className={`px-3 py-1.5 rounded-md transition text-sm ${handStatus.riichi === 2 ? 'bg-[#8a1c1c] text-white font-bold' : 'text-[#a3b8b0]'}`}>더블 리치</button>
+                                </div>
+                            </div>
+
+                            <div className="flex gap-4">
+                                <div className="flex-1 flex items-center justify-between bg-[#1a2320] p-3 rounded-lg">
+                                    <label className="text-sm text-[#a3b8b0] font-semibold">도라 (Dora)</label>
+                                    <div className="flex items-center gap-3">
+                                        <button onClick={() => setHandStatus({ ...handStatus, doraCount: Math.max(0, handStatus.doraCount - 1) })} className="w-8 h-8 rounded-full bg-[#2d3a35] text-white flex items-center justify-center hover:bg-[#3e524b]">-</button>
+                                        <span className="text-xl font-bold text-[#d4af37] w-4 text-center">{handStatus.doraCount}</span>
+                                        <button onClick={() => setHandStatus({ ...handStatus, doraCount: handStatus.doraCount + 1 })} className="w-8 h-8 rounded-full bg-[#2d3a35] text-white flex items-center justify-center hover:bg-[#3e524b]">+</button>
+                                    </div>
+                                </div>
+                                <div className="flex-1 flex items-center justify-between bg-[#1a2320] p-3 rounded-lg">
+                                    <label className="text-sm text-[#a3b8b0] font-semibold">본장 (Honba)</label>
+                                    <div className="flex items-center gap-3">
+                                        <button onClick={() => setHandStatus({ ...handStatus, honba: Math.max(0, handStatus.honba - 1) })} className="w-8 h-8 rounded-full bg-[#2d3a35] text-white flex items-center justify-center hover:bg-[#3e524b]">-</button>
+                                        <span className="text-xl font-bold text-[#d4af37] w-4 text-center">{handStatus.honba}</span>
+                                        <button onClick={() => setHandStatus({ ...handStatus, honba: handStatus.honba + 1 })} className="w-8 h-8 rounded-full bg-[#2d3a35] text-white flex items-center justify-center hover:bg-[#3e524b]">+</button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
                 {/* Hand Area (The Rack) */}
+
                 <section className="relative">
 
 
@@ -256,8 +417,12 @@ export default function Home() {
                                 <TileComponent
                                     key={tile.id}
                                     tile={tile}
-                                    onClick={() => removeFromHand(tile.id)}
-                                    className="hover:-translate-y-4 hover:rotate-1 transition-all duration-300 shadow-2xl z-10"
+                                    onClick={() => toggleTileSelection(tile.id)}
+                                    selected={selectedTiles.includes(tile.id)}
+                                    className={`
+                                        transition-all duration-300 shadow-2xl z-10
+                                        ${tile.isOpen ? 'opacity-80 scale-95 -rotate-2 mix-blend-luminosity' : 'hover:-translate-y-4 hover:rotate-1'}
+                                    `}
                                 />
                             ))}
 
@@ -269,6 +434,17 @@ export default function Home() {
                             )}
                         </div>
                     </div>
+
+                    {/* Furo Action Menu (Shows when tiles are selected) */}
+                    {selectedTiles.length >= 3 && (
+                        <div className="absolute top-full left-1/2 -translate-x-1/2 mt-4 z-20 flex gap-2 p-2 bg-[#1a1a1a] rounded-lg border border-[#d4af37]/30 shadow-2xl animate-in slide-in-from-top-4">
+                            <button onClick={() => declareFuro('chi')} className="px-4 py-2 bg-[#2d3a35] hover:bg-[#3e524b] text-[#a3b8b0] hover:text-white rounded transition">치 (Chi)</button>
+                            <button onClick={() => declareFuro('pon')} className="px-4 py-2 bg-[#2d3a35] hover:bg-[#3e524b] text-[#a3b8b0] hover:text-white rounded transition">퐁 (Pon)</button>
+                            <button onClick={() => declareFuro('kan')} className="px-4 py-2 bg-[#2d3a35] hover:bg-[#3e524b] text-[#a3b8b0] hover:text-white rounded transition">명깡 (Kan)</button>
+                            <button onClick={() => declareFuro('ankan')} className="px-4 py-2 bg-[#2d3a35] hover:bg-[#3e524b] text-[#a3b8b0] hover:text-white rounded transition">안깡 (Ankan)</button>
+                            <button onClick={() => setSelectedTiles([])} className="px-4 py-2 bg-[#4a0e0e] hover:bg-[#6b1616] text-[#e8e8e3] rounded transition ml-2">취소</button>
+                        </div>
+                    )}
 
                     {/* Controls */}
                     <div className="mt-6 flex justify-center gap-4">

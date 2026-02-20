@@ -7,6 +7,23 @@ export interface Tile {
   type: TileType;
   symbol: string; // standard notation e.g. 1m, 5p, 1z
   label: string; // Unicode character
+  isOpen?: boolean; // True if part of an open set
+}
+
+export type FuroType = 'chi' | 'pon' | 'kan' | 'ankan';
+
+export interface Furo {
+  type: FuroType;
+  tiles: Tile[];
+}
+
+export interface HandStatus {
+  winType: 'tsumo' | 'ron';
+  windField: 1 | 2; // 1: East, 2: South
+  windPlayer: 1 | 2 | 3 | 4; // 1-4: East, South, West, North
+  riichi: 0 | 1 | 2; // 0: None, 1: Riichi, 2: Double Riichi
+  doraCount: number;
+  honba: number;
 }
 
 export const TILES: Omit<Tile, 'id'>[] = [
@@ -54,16 +71,22 @@ export const TILES: Omit<Tile, 'id'>[] = [
 ];
 
 // Helper to convert hand to riichi string format
-export function handToRiichiString(hand: Tile[]): string {
+export function handToRiichiString(hand: Tile[], status?: HandStatus, furoSets?: Furo[]): string {
   // Riichi expects format like "112233m456p789s11z"
-  // Actually standard format is: start with numbers, end with type suffix for each group?
-  // Or just "1m2m3m..." which is also valid and simpler to generate.
-  // Although "123m" is more standard.
-  // Let's use the explicit "1m2m..." for simplicity unless riichi library complains.
-  // Actually, usually it is sorted and grouped.
-  // Let's sort the hand first.
+  // Furo are appended with '+' e.g. "+123m"
+  // Dora, Riichi, Winds are also appended as options.
 
-  const sortedHand = [...hand].sort((a, b) => {
+  // 1. Process closed hand tiles (tiles not in furoSets)
+  const openTileIds = new Set<string>();
+  if (furoSets) {
+    furoSets.forEach(furo => {
+      furo.tiles.forEach(t => openTileIds.add(t.id));
+    });
+  }
+
+  const closedTiles = hand.filter(t => !openTileIds.has(t.id));
+
+  const sortTiles = (tiles: Tile[]) => [...tiles].sort((a, b) => {
     const typeOrder = { 'man': 0, 'pin': 1, 'sou': 2, 'honors': 3 };
     if (typeOrder[a.type] !== typeOrder[b.type]) {
       return typeOrder[a.type] - typeOrder[b.type];
@@ -71,23 +94,69 @@ export function handToRiichiString(hand: Tile[]): string {
     return parseInt(a.value) - parseInt(b.value);
   });
 
-  // Group by type
-  const groups: Record<string, string[]> = {
-    man: [],
-    pin: [],
-    sou: [],
-    honors: []
-  };
+  const sortedClosed = sortTiles(closedTiles);
 
-  sortedHand.forEach(tile => {
-    groups[tile.type].push(tile.value);
-  });
+  // Group closed hand
+  const groups: Record<string, string[]> = { man: [], pin: [], sou: [], honors: [] };
+  sortedClosed.forEach(tile => groups[tile.type].push(tile.value));
 
   let result = '';
   if (groups.man.length > 0) result += groups.man.join('') + 'm';
   if (groups.pin.length > 0) result += groups.pin.join('') + 'p';
   if (groups.sou.length > 0) result += groups.sou.join('') + 's';
   if (groups.honors.length > 0) result += groups.honors.join('') + 'z';
+
+  // For Ron/Tsumo, riichi library logic:
+  // If Tsumo, the last tile drawn is normally just Part of the hand (if 14 tiles).
+  // If Ron, the winning tile should be appended with '+'.
+  // However, the user selects 14 tiles total. We will assume the last tile in `hand` is the winning tile.
+  if (status && status.winType === 'ron' && closedTiles.length > 0) {
+    // We need to extract the winning tile from the closed set, format the rest, and append the winning tile with '+'
+    // To do this properly, let's treat the LAST tile added to `hand` (that is closed) as the winning tile.
+    const lastTileInHand = hand[hand.length - 1];
+
+    // Re-build closed string excluding the last tile
+    const closedWithoutWin = sortedClosed.filter(t => t.id !== lastTileInHand.id);
+    const groupsNoWin: Record<string, string[]> = { man: [], pin: [], sou: [], honors: [] };
+    closedWithoutWin.forEach(t => groupsNoWin[t.type].push(t.value));
+
+    let baseStr = '';
+    if (groupsNoWin.man.length > 0) baseStr += groupsNoWin.man.join('') + 'm';
+    if (groupsNoWin.pin.length > 0) baseStr += groupsNoWin.pin.join('') + 'p';
+    if (groupsNoWin.sou.length > 0) baseStr += groupsNoWin.sou.join('') + 's';
+    if (groupsNoWin.honors.length > 0) baseStr += groupsNoWin.honors.join('') + 'z';
+
+    // Append the winning tile
+    const suffixMap: Record<TileType, string> = { 'man': 'm', 'pin': 'p', 'sou': 's', 'honors': 'z' };
+    result = baseStr + '+' + lastTileInHand.value + suffixMap[lastTileInHand.type];
+  }
+
+  // 2. Append Furo (Open Sets)
+  if (furoSets && furoSets.length > 0) {
+    furoSets.forEach(furo => {
+      const sortedFuro = sortTiles(furo.tiles);
+      const suffixMap: Record<TileType, string> = { 'man': 'm', 'pin': 'p', 'sou': 's', 'honors': 'z' };
+      const typeStr = suffixMap[sortedFuro[0].type];
+      const valuesStr = sortedFuro.map(t => t.value).join('');
+      result += '+' + valuesStr + typeStr;
+    });
+  }
+
+  // 3. Append Options (Winds, Riichi)
+  if (status) {
+    let options = '';
+
+    // Winds: {field}{seat} -> e.g. '11' for East/East, '24' for South/North
+    options += `${status.windField}${status.windPlayer}`;
+
+    // Riichi
+    if (status.riichi === 1) options += 'r';
+    else if (status.riichi === 2) options += 'w'; // Double Riichi
+
+    if (options) {
+      result += '+' + options;
+    }
+  }
 
   return result;
 }
