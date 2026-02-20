@@ -10,6 +10,7 @@ import Riichi from 'riichi';
 interface ScoreResult {
     ten: number;
     name: string;
+    isAgari: boolean;
     text: string;
     han: number;
     fu: number;
@@ -593,7 +594,7 @@ export default function Home() {
 
                                 <div className="bg-gradient-to-r from-[#2d1b18] to-[#3e2723] p-8 border-b border-[#d4af37]/30">
                                     <h3 className="text-3xl font-bold bg-gradient-to-r from-[#d4af37] to-[#f7e7ce] bg-clip-text text-transparent drop-shadow-sm text-center mb-4">
-                                        {result.name ? (YakuNameMap[result.name] || result.name) : '점수 없음'}
+                                        {result.isAgari ? (result.name ? (YakuNameMap[result.name] || result.name) : '화료 (Win)') : '점수 없음'}
                                     </h3>
                                 </div>
 
