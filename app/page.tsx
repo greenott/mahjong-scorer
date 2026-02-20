@@ -174,19 +174,13 @@ export default function Home() {
     useEffect(() => {
         if (result || error) {
             document.body.style.overflow = 'hidden';
-            // Prevent mobile safari scroll bouncing on body
-            document.body.style.position = 'fixed';
-            document.body.style.width = '100%';
+            // Removing touchAction: none as it breaks scrolling inside the modal on mobile
         } else {
             document.body.style.overflow = '';
-            document.body.style.position = '';
-            document.body.style.width = '';
         }
 
         return () => {
             document.body.style.overflow = '';
-            document.body.style.position = '';
-            document.body.style.width = '';
         };
     }, [result, error]);
 
@@ -377,7 +371,7 @@ export default function Home() {
                     <h2 className="text-2xl font-black text-[#d4af37] pb-2 flex items-center gap-2 drop-shadow-md border-b border-[#ffffff]/10">
                         <span>⚙️</span> 대국 설정
                     </h2>
-
+                    {/* ... rest of the settings section remains the same ... */}
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6">
                         {/* Card 1: 기본 흐름 (장풍, 자풍, 화료, 본장) */}
                         <div className="bg-[#0f281e]/60 p-5 md:p-6 rounded-2xl border border-[#ffffff]/10 shadow-lg space-y-5 flex flex-col">
@@ -494,51 +488,67 @@ export default function Home() {
                         </div>
                     </div>
                 </section>
+            </div> {/* End of upper layout constraint block */}
 
-                {/* Hand Area (The Rack) */}
-
-                <section className="relative">
-
-                    {/* Wood Rail Container */}
-                    <div className="bg-[#3e2723] p-4 rounded-xl shadow-[0_10px_30px_rgba(0,0,0,0.5),inset_0_2px_5px_rgba(255,255,255,0.1)] border-b-8 border-[#2d1b18]">
-                        <div className="bg-[#0f281e] rounded-lg p-6 min-h-[140px] md:min-h-[180px] flex flex-wrap gap-2 md:gap-4 justify-center items-center shadow-inner relative overflow-hidden">
-
-                            {/* Felt Texture Overlay for Rack */}
-                            <div className="absolute inset-0 opacity-20 pointer-events-none" style={{ backgroundImage: 'var(--felt-texture)' }}></div>
-
-                            {hand.length === 0 && (
-                                <div className="text-center space-y-3 z-10 opacity-60">
-                                    <div className="text-5xl animate-bounce">👇</div>
-                                    <div className="text-[#a3b8b0] text-lg font-light">패를 선택하여 이곳에 올려주세요</div>
-                                </div>
-                            )}
-
-                            {hand.map((tile) => (
-                                <TileComponent
-                                    key={tile.id}
-                                    tile={tile}
-                                    onClick={() => toggleTileSelection(tile.id)}
-                                    selected={selectedTiles.includes(tile.id)}
-                                    className={`
-                                        transition-all duration-300 shadow-2xl z-10
-                                        ${tile.isOpen ? 'opacity-80 scale-95 -rotate-2 mix-blend-luminosity' : 'hover:-translate-y-4 hover:rotate-1'}
-                                    `}
-                                />
-                            ))}
-
-                            {/* Ghost Tile Placeholder if hand not full */}
-                            {hand.length < 14 && hand.length > 0 && (
-                                <div className="w-14 h-20 md:w-20 md:h-28 border-2 border-dashed border-[#ffffff]/20 rounded-lg flex items-center justify-center">
-                                    <span className="text-[#ffffff]/20 text-2xl font-bold">+</span>
-                                </div>
-                            )}
+            {/* Sticky items should be placed in root block */}
+            <div className="max-w-7xl mx-auto space-y-12 pb-20">
+                {/* Hand Area (The Rack) - Sticky Header */}
+                <div className="sticky top-0 z-40 -mx-4 px-4 md:-mx-8 md:px-8 pt-4 pb-6 bg-[#0f281e]/95 backdrop-blur-md shadow-[0_15px_30px_rgba(0,0,0,0.6)] border-b border-[#000000]/50 transition-all duration-300">
+                    <div className="max-w-7xl mx-auto">
+                        <div className="flex justify-between items-end mb-3">
+                            <h2 className="text-lg md:text-xl font-bold text-[#d4af37] flex items-center gap-2 drop-shadow-md">
+                                <span>🖐</span> 내가 선택한 패
+                            </h2>
+                            <span className="text-xs md:text-sm font-bold text-[#a3b8b0] bg-[#1a2320] px-3 py-1 rounded-full border border-[#ffffff]/10 shadow-inner tracking-wider">
+                                {hand.length} <span className="opacity-40">/ 14</span>
+                            </span>
                         </div>
-                    </div >
 
+                        {/* Wood Rail Container */}
+                        <div className="bg-[#3e2723] p-2 md:p-3 rounded-xl shadow-[0_10px_30px_rgba(0,0,0,0.5),inset_0_2px_5px_rgba(255,255,255,0.1)] border-b-4 md:border-b-8 border-[#2d1b18]">
+                            <div className="bg-[#0f281e] rounded-lg p-2 md:p-5 min-h-[90px] md:min-h-[140px] flex flex-wrap gap-1.5 md:gap-3 justify-center items-center shadow-inner relative overflow-hidden transition-all duration-300">
+
+                                {/* Felt Texture Overlay for Rack */}
+                                <div className="absolute inset-0 opacity-20 pointer-events-none" style={{ backgroundImage: 'var(--felt-texture)' }}></div>
+
+                                {hand.length === 0 && (
+                                    <div className="text-center space-y-1 md:space-y-2 z-10 opacity-60 py-4">
+                                        <div className="text-3xl md:text-5xl animate-bounce">👇</div>
+                                        <div className="text-[#a3b8b0] text-xs md:text-lg font-light">패를 선택하여 이곳에 올려주세요</div>
+                                    </div>
+                                )}
+
+                                {hand.map((tile) => (
+                                    <div key={tile.id} className="transform scale-[0.7] sm:scale-[0.85] md:scale-100 origin-center transition-transform duration-300">
+                                        <TileComponent
+                                            tile={tile}
+                                            onClick={() => toggleTileSelection(tile.id)}
+                                            selected={selectedTiles.includes(tile.id)}
+                                            className={`
+                                                transition-all duration-300 shadow-xl z-20 hover:z-30
+                                                ${tile.isOpen ? 'opacity-80 scale-95 -rotate-2 mix-blend-luminosity' : 'hover:-translate-y-2 md:hover:-translate-y-4 hover:rotate-1'}
+                                            `}
+                                        />
+                                    </div>
+                                ))}
+
+                                {/* Ghost Tile Placeholder if hand not full */}
+                                {hand.length < 14 && hand.length > 0 && (
+                                    <div className="w-10 h-14 sm:w-12 sm:h-16 md:w-20 md:h-28 border-2 border-dashed border-[#ffffff]/20 rounded-lg flex items-center justify-center transition-all duration-300 m-1">
+                                        <span className="text-[#ffffff]/20 text-xl md:text-2xl font-bold">+</span>
+                                    </div>
+                                )}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                {/* Hand Action Controls & Settings */}
+                <section className="relative max-w-7xl mx-auto pt-2">
                     {/* Furo Action Menu (Shows when tiles are selected) */}
                     {
                         selectedTiles.length >= 3 && (
-                            <div className="absolute top-full left-1/2 -translate-x-1/2 mt-4 z-20 flex gap-2 p-2 bg-[#1a1a1a] rounded-lg border border-[#d4af37]/30 shadow-2xl animate-in slide-in-from-top-4">
+                            <div className="absolute -top-6 left-1/2 -translate-x-1/2 mt-4 z-20 flex gap-2 p-2 bg-[#1a1a1a] rounded-lg border border-[#d4af37]/30 shadow-2xl animate-in slide-in-from-top-4">
                                 <button onClick={() => declareFuro('chi')} className="px-4 py-2 bg-[#2d3a35] hover:bg-[#3e524b] text-[#a3b8b0] hover:text-white rounded transition">치 (Chi)</button>
                                 <button onClick={() => declareFuro('pon')} className="px-4 py-2 bg-[#2d3a35] hover:bg-[#3e524b] text-[#a3b8b0] hover:text-white rounded transition">퐁 (Pon)</button>
                                 <button onClick={() => declareFuro('kan')} className="px-4 py-2 bg-[#2d3a35] hover:bg-[#3e524b] text-[#a3b8b0] hover:text-white rounded transition">명깡 (Kan)</button>
@@ -549,7 +559,7 @@ export default function Home() {
                     }
 
                     {/* Controls */}
-                    <div className="mt-6 flex justify-center gap-4">
+                    <div className="flex justify-center gap-4">
                         <button
                             onClick={clearHand}
                             className="px-6 py-4 md:py-3 text-lg md:text-base bg-[#4a0e0e] hover:bg-[#6b1616] text-[#e8e8e3] rounded-lg font-medium transition-all shadow-lg hover:shadow-red-900/40 active:translate-y-1 border-b-4 border-[#2d0808] active:border-b-0"
@@ -569,136 +579,9 @@ export default function Home() {
                     </div>
                 </section>
 
-                {/* Error Modal - Overlay Style */}
-                {
-                    error && (
-                        <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center p-0 sm:p-4 bg-black/80 backdrop-blur-md animate-in fade-in duration-300" onClick={() => setError(null)}>
-                            <div className="bg-[#1a1a1a] max-w-md w-full rounded-t-3xl sm:rounded-2xl border border-[#ff4444]/50 shadow-[0_0_50px_rgba(255,68,68,0.2)] overflow-hidden relative animate-in slide-in-from-bottom-full sm:slide-in-from-bottom-0 pb-6 sm:pb-0" onClick={e => e.stopPropagation()}>
-                                {/* Mobile Handle */}
-                                <div className="sm:hidden w-12 h-1.5 bg-white/20 rounded-full mx-auto mt-3 mb-1"></div>
-                                {/* Close Button */}
-                                <button onClick={() => setError(null)} className="absolute top-4 right-4 text-[#a3b8b0] hover:text-white transition-colors">
-                                    <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-                                    </svg>
-                                </button>
-                                <div className="text-5xl mb-4">⚠️</div>
-                                <h3 className="text-xl font-bold text-[#ff4444] mb-2">계산 실패</h3>
-                                <p className="text-[#e8e8e3] font-light leading-relaxed">{error}</p>
-                                <button onClick={() => setError(null)} className="mt-8 px-6 py-2 bg-[#ff4444]/20 hover:bg-[#ff4444]/30 text-[#ff4444] rounded-lg transition-colors border border-[#ff4444]/30">
-                                    확인
-                                </button>
-                            </div>
-                        </div>
-                    )
-                }
 
-                {/* Result Modal - Overlay Style */}
-                {
-                    result && (
-                        <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center p-0 sm:p-4 bg-black/80 backdrop-blur-md animate-in fade-in duration-300" onClick={() => setResult(null)}>
-                            <div className="bg-[#1a1a1a] max-w-4xl w-full max-h-[90vh] overflow-y-auto rounded-t-3xl sm:rounded-2xl border border-[#d4af37]/50 shadow-[0_0_50px_rgba(212,175,55,0.2)] relative animate-in slide-in-from-bottom-full sm:slide-in-from-bottom-0 pb-8 sm:pb-0 scrollbar-thin scrollbar-thumb-[#d4af37]/50 scrollbar-track-transparent" onClick={e => e.stopPropagation()}>
-                                {/* Mobile Handle */}
-                                <div className="sm:hidden w-12 h-1.5 bg-white/20 rounded-full mx-auto mt-3 mb-1 sticky top-3 z-50"></div>
 
-                                {/* Close Button */}
-                                <button onClick={() => setResult(null)} className="absolute top-4 right-4 text-[#a3b8b0] hover:text-white transition-colors z-50 bg-black/50 sm:bg-transparent rounded-full p-1 sm:p-0">
-                                    <svg xmlns="http://www.w3.org/2000/svg" className="h-8 w-8" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-                                    </svg>
-                                </button>
 
-                                <div className="bg-gradient-to-r from-[#2d1b18] to-[#3e2723] p-6 sm:p-8 border-b border-[#d4af37]/30">
-                                    <h3 className="text-2xl sm:text-3xl font-bold bg-gradient-to-r from-[#d4af37] to-[#f7e7ce] bg-clip-text text-transparent drop-shadow-sm text-center mb-0 mt-2 sm:mt-0 sm:mb-4">
-                                        {result.isAgari ? (result.name ? (YakuNameMap[result.name] || result.name) : '화료 (Win)') : '점수 없음'}
-                                    </h3>
-                                </div>
-
-                                <div className="p-8 grid md:grid-cols-5 gap-8 bg-[#0f281e] relative">
-                                    <div className="absolute inset-0 opacity-10 pointer-events-none" style={{ backgroundImage: 'var(--felt-texture)' }}></div>
-
-                                    <div className="md:col-span-3 space-y-6 relative z-10">
-                                        <div className="bg-black/30 p-8 rounded-xl border border-[#d4af37]/20 text-center backdrop-blur-sm">
-                                            <p className="text-[#d4af37]/80 uppercase tracking-widest text-sm font-semibold mb-2">총 점수</p>
-                                            <div className="text-7xl md:text-8xl font-black text-[#d4af37] drop-shadow-[0_0_15px_rgba(212,175,55,0.4)]">
-                                                {result.ten > 0 ? result.ten.toLocaleString() : 0}
-                                                <span className="text-3xl text-[#a3b8b0] ml-2 font-light">점</span>
-                                            </div>
-                                        </div>
-
-                                        {/* Applied Settings Chips */}
-                                        <div className="flex flex-wrap gap-2 pt-2">
-                                            <span className="bg-[#2d3a35]/80 px-3 py-1.5 rounded-full border border-[#ffffff]/10 text-sm font-medium text-[#e8e8e3] flex items-center gap-1.5 shadow-sm">
-                                                <span>🌬️</span> {handStatus.windField === 1 ? '동' : '남'}1국 / {handStatus.windPlayer === 1 ? '동' : handStatus.windPlayer === 2 ? '남' : handStatus.windPlayer === 3 ? '서' : '북'}가
-                                            </span>
-                                            <span className="bg-[#2d3a35]/80 px-3 py-1.5 rounded-full border border-[#ffffff]/10 text-sm font-medium text-[#e8e8e3] shadow-sm">
-                                                {handStatus.winType === 'tsumo' ? '🖐 쯔모' : '👉 론'}
-                                            </span>
-                                            {handStatus.doraCount > 0 && (
-                                                <span className="bg-[#4a3e1c]/80 px-3 py-1.5 rounded-full border border-[#d4af37]/30 text-sm font-bold text-[#d4af37] flex items-center gap-1.5 shadow-sm">
-                                                    <span>🌟</span> 도라 {handStatus.doraCount}
-                                                </span>
-                                            )}
-                                            {handStatus.honba > 0 && (
-                                                <span className="bg-[#2d3a35]/80 px-3 py-1.5 rounded-full border border-[#ffffff]/10 text-sm font-medium text-[#a3b8b0] shadow-sm">
-                                                    +{handStatus.honba} 본장
-                                                </span>
-                                            )}
-                                            {handStatus.riichi > 0 && (
-                                                <span className="bg-[#4a0e0e]/80 px-3 py-1.5 rounded-full border border-[#ff4444]/30 text-sm font-bold text-white flex items-center gap-1.5 shadow-sm">
-                                                    <span>🔥</span> {handStatus.riichi === 1 ? '리치' : '더블 리치'}
-                                                </span>
-                                            )}
-                                        </div>
-
-                                        <div className="bg-black/30 rounded-xl border border-[#ffffff]/10 overflow-hidden backdrop-blur-sm">
-                                            <div className="bg-[#ffffff]/5 px-6 py-3 text-lg font-semibold text-[#a3b8b0] flex items-center gap-2">
-                                                <span>📜</span> 적용된 역 (Yaku)
-                                            </div>
-                                            {result.yaku && Object.keys(result.yaku).length > 0 ? (
-                                                <ul className="divide-y divide-[#ffffff]/10">
-                                                    {Object.entries(result.yaku).map(([name, han]) => (
-                                                        <li key={name} className="flex justify-between items-center px-6 py-4 hover:bg-[#ffffff]/5 transition-colors">
-                                                            <span className="font-bold text-xl text-[#e8e8e3]">{translateYaku(name)}</span>
-                                                            <span className="font-mono text-[#d4af37] bg-[#d4af37]/10 px-3 py-1 rounded border border-[#d4af37]/20">{String(han)} 판</span>
-                                                        </li>
-                                                    ))}
-                                                </ul>
-                                            ) : (
-                                                <div className="p-8 text-center text-[#a3b8b0] italic">적용된 역이 없습니다.</div>
-                                            )}
-                                        </div>
-                                    </div>
-
-                                    <div className="md:col-span-2 flex flex-col gap-6 relative z-10">
-                                        <div className="bg-gradient-to-br from-[#2d3a35] to-[#1a2320] p-8 rounded-xl border border-[#ffffff]/10 shadow-lg flex-1 flex flex-col justify-center space-y-8">
-                                            <div className="flex justify-center gap-12 mt-8 text-[#d4af37]/90 text-xl font-light border-t border-[#d4af37]/20 pt-6 w-full max-w-md mx-auto">
-                                                <div className="flex flex-col items-center">
-                                                    <span className="text-5xl font-serif font-bold text-[#f7e7ce] mb-1 drop-shadow-[0_2px_4px_rgba(0,0,0,0.5)]">
-                                                        {result.han !== undefined ? result.han : (result.name === 'Yakuman' ? '13' : '-')}
-                                                    </span>
-                                                    <span className="text-sm uppercase tracking-widest opacity-70">판 (Han)</span>
-                                                </div>
-                                                <div className="w-px bg-[#d4af37]/30 h-16 self-center"></div>
-                                                <div className="flex flex-col items-center">
-                                                    <span className="text-5xl font-serif font-bold text-[#f7e7ce] mb-1 drop-shadow-[0_2px_4px_rgba(0,0,0,0.5)]">
-                                                        {result.fu !== undefined ? result.fu : '-'}
-                                                    </span>
-                                                    <span className="text-sm uppercase tracking-widest opacity-70">부 (Fu)</span>
-                                                </div>
-                                            </div>
-                                            {result.text && (
-                                                <div className="text-sm text-[#a3b8b0] font-mono mt-4 pt-4 border-t border-[#ffffff]/10 leading-relaxed break-all bg-black/20 p-4 rounded-lg">
-                                                    {result.text}
-                                                </div>
-                                            )}
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    )
-                }
 
                 {/* Tile Selection Palette */}
                 <section className="grid grid-cols-1 gap-6 sm:gap-8">
@@ -726,6 +609,140 @@ export default function Home() {
             <footer className="text-center text-[#a3b8b0]/40 text-sm pb-8 font-light tracking-widest uppercase">
                 Mahjong Scorer &copy; {new Date().getFullYear()}
             </footer>
+
+            {/* Error Modal - Root Level to Escape Containing Blocks */}
+            {
+                error && (
+                    <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center p-0 sm:p-4 bg-black/80 backdrop-blur-md animate-fade-in" onClick={() => setError(null)}>
+                        <div className="bg-[#1a1a1a] max-w-md w-full rounded-t-3xl sm:rounded-2xl border border-[#ff4444]/50 shadow-[0_0_50px_rgba(255,68,68,0.2)] overflow-hidden relative pb-6 sm:pb-0 animate-slide-up sm:animate-scale-in" onClick={e => e.stopPropagation()}>
+                            {/* Mobile Handle */}
+                            <div className="sm:hidden w-12 h-1.5 bg-white/20 rounded-full mx-auto mt-3 mb-1"></div>
+                            {/* Close Button */}
+                            <button onClick={() => setError(null)} className="absolute top-4 right-4 text-[#a3b8b0] hover:text-white transition-colors">
+                                <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                                </svg>
+                            </button>
+                            <div className="text-5xl mb-4 text-center mt-6">⚠️</div>
+                            <h3 className="text-xl font-bold text-[#ff4444] mb-2 text-center">계산 실패</h3>
+                            <p className="text-[#e8e8e3] font-light leading-relaxed text-center px-6">{error}</p>
+                            <div className="text-center">
+                                <button onClick={() => setError(null)} className="mt-8 px-6 py-2 mb-6 bg-[#ff4444]/20 hover:bg-[#ff4444]/30 text-[#ff4444] rounded-lg transition-colors border border-[#ff4444]/30">
+                                    확인
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                )
+            }
+
+            {/* Result Modal - Root Level to Escape Containing Blocks */}
+            {
+                result && (
+                    <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center p-0 sm:p-4 bg-black/80 backdrop-blur-md animate-fade-in" onClick={() => setResult(null)}>
+                        <div className="bg-[#1a1a1a] max-w-4xl w-full max-h-[90vh] overflow-y-auto rounded-t-3xl sm:rounded-2xl border border-[#d4af37]/50 shadow-[0_0_50px_rgba(212,175,55,0.2)] relative pb-8 sm:pb-0 scrollbar-thin scrollbar-thumb-[#d4af37]/50 scrollbar-track-transparent animate-slide-up sm:animate-none" onClick={e => e.stopPropagation()}>
+                            {/* Mobile Handle */}
+                            <div className="sm:hidden w-12 h-1.5 bg-white/20 rounded-full mx-auto mt-3 mb-1 sticky top-3 z-50"></div>
+
+                            {/* Close Button */}
+                            <button onClick={() => setResult(null)} className="absolute top-4 right-4 text-[#a3b8b0] hover:text-white transition-colors z-[60] bg-black/50 sm:bg-transparent rounded-full p-1 sm:p-0">
+                                <svg xmlns="http://www.w3.org/2000/svg" className="h-8 w-8" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                                </svg>
+                            </button>
+
+                            <div className="bg-gradient-to-r from-[#2d1b18] to-[#3e2723] p-6 sm:p-8 border-b border-[#d4af37]/30">
+                                <h3 className="text-2xl sm:text-3xl font-bold bg-gradient-to-r from-[#d4af37] to-[#f7e7ce] bg-clip-text text-transparent drop-shadow-sm text-center mb-0 mt-2 sm:mt-0 sm:mb-4">
+                                    {result.isAgari ? (result.name ? (YakuNameMap[result.name] || result.name) : '화료 (Win)') : '점수 없음'}
+                                </h3>
+                            </div>
+
+                            <div className="p-8 grid md:grid-cols-5 gap-8 bg-[#0f281e] relative">
+                                <div className="absolute inset-0 opacity-10 pointer-events-none" style={{ backgroundImage: 'var(--felt-texture)' }}></div>
+
+                                <div className="md:col-span-3 space-y-6 relative z-10">
+                                    <div className="bg-black/30 p-8 rounded-xl border border-[#d4af37]/20 text-center backdrop-blur-sm">
+                                        <p className="text-[#d4af37]/80 uppercase tracking-widest text-sm font-semibold mb-2">총 점수</p>
+                                        <div className="text-7xl md:text-8xl font-black text-[#d4af37] drop-shadow-[0_0_15px_rgba(212,175,55,0.4)]">
+                                            {result.ten > 0 ? result.ten.toLocaleString() : 0}
+                                            <span className="text-3xl text-[#a3b8b0] ml-2 font-light">점</span>
+                                        </div>
+                                    </div>
+
+                                    {/* Applied Settings Chips */}
+                                    <div className="flex flex-wrap gap-2 pt-2">
+                                        <span className="bg-[#2d3a35]/80 px-3 py-1.5 rounded-full border border-[#ffffff]/10 text-sm font-medium text-[#e8e8e3] flex items-center gap-1.5 shadow-sm">
+                                            <span>🌬️</span> {handStatus.windField === 1 ? '동' : '남'}1국 / {handStatus.windPlayer === 1 ? '동' : handStatus.windPlayer === 2 ? '남' : handStatus.windPlayer === 3 ? '서' : '북'}가
+                                        </span>
+                                        <span className="bg-[#2d3a35]/80 px-3 py-1.5 rounded-full border border-[#ffffff]/10 text-sm font-medium text-[#e8e8e3] shadow-sm">
+                                            {handStatus.winType === 'tsumo' ? '🖐 쯔모' : '👉 론'}
+                                        </span>
+                                        {handStatus.doraCount > 0 && (
+                                            <span className="bg-[#4a3e1c]/80 px-3 py-1.5 rounded-full border border-[#d4af37]/30 text-sm font-bold text-[#d4af37] flex items-center gap-1.5 shadow-sm">
+                                                <span>🌟</span> 도라 {handStatus.doraCount}
+                                            </span>
+                                        )}
+                                        {handStatus.honba > 0 && (
+                                            <span className="bg-[#2d3a35]/80 px-3 py-1.5 rounded-full border border-[#ffffff]/10 text-sm font-medium text-[#a3b8b0] shadow-sm">
+                                                +{handStatus.honba} 본장
+                                            </span>
+                                        )}
+                                        {handStatus.riichi > 0 && (
+                                            <span className="bg-[#4a0e0e]/80 px-3 py-1.5 rounded-full border border-[#ff4444]/30 text-sm font-bold text-white flex items-center gap-1.5 shadow-sm">
+                                                <span>🔥</span> {handStatus.riichi === 1 ? '리치' : '더블 리치'}
+                                            </span>
+                                        )}
+                                    </div>
+
+                                    <div className="bg-black/30 rounded-xl border border-[#ffffff]/10 overflow-hidden backdrop-blur-sm">
+                                        <div className="bg-[#ffffff]/5 px-6 py-3 text-lg font-semibold text-[#a3b8b0] flex items-center gap-2">
+                                            <span>📜</span> 적용된 역 (Yaku)
+                                        </div>
+                                        {result.yaku && Object.keys(result.yaku).length > 0 ? (
+                                            <ul className="divide-y divide-[#ffffff]/10">
+                                                {Object.entries(result.yaku).map(([name, han]) => (
+                                                    <li key={name} className="flex justify-between items-center px-6 py-4 hover:bg-[#ffffff]/5 transition-colors">
+                                                        <span className="font-bold text-xl text-[#e8e8e3]">{translateYaku(name)}</span>
+                                                        <span className="font-mono text-[#d4af37] bg-[#d4af37]/10 px-3 py-1 rounded border border-[#d4af37]/20">{String(han)} 판</span>
+                                                    </li>
+                                                ))}
+                                            </ul>
+                                        ) : (
+                                            <div className="p-8 text-center text-[#a3b8b0] italic">적용된 역이 없습니다.</div>
+                                        )}
+                                    </div>
+                                </div>
+
+                                <div className="md:col-span-2 flex flex-col gap-6 relative z-10">
+                                    <div className="bg-gradient-to-br from-[#2d3a35] to-[#1a2320] p-8 rounded-xl border border-[#ffffff]/10 shadow-lg flex-1 flex flex-col justify-center space-y-8">
+                                        <div className="flex justify-center gap-12 mt-8 text-[#d4af37]/90 text-xl font-light border-t border-[#d4af37]/20 pt-6 w-full max-w-md mx-auto">
+                                            <div className="flex flex-col items-center">
+                                                <span className="text-5xl font-serif font-bold text-[#f7e7ce] mb-1 drop-shadow-[0_2px_4px_rgba(0,0,0,0.5)]">
+                                                    {result.han !== undefined ? result.han : (result.name === 'Yakuman' ? '13' : '-')}
+                                                </span>
+                                                <span className="text-sm uppercase tracking-widest opacity-70">판 (Han)</span>
+                                            </div>
+                                            <div className="w-px bg-[#d4af37]/30 h-16 self-center"></div>
+                                            <div className="flex flex-col items-center">
+                                                <span className="text-5xl font-serif font-bold text-[#f7e7ce] mb-1 drop-shadow-[0_2px_4px_rgba(0,0,0,0.5)]">
+                                                    {result.fu !== undefined ? result.fu : '-'}
+                                                </span>
+                                                <span className="text-sm uppercase tracking-widest opacity-70">부 (Fu)</span>
+                                            </div>
+                                        </div>
+                                        {result.text && (
+                                            <div className="text-sm text-[#a3b8b0] font-mono mt-4 pt-4 border-t border-[#ffffff]/10 leading-relaxed break-all bg-black/20 p-4 rounded-lg">
+                                                {result.text}
+                                            </div>
+                                        )}
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                )
+            }
+
         </main >
     );
 }
