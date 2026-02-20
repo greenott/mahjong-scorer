@@ -616,6 +616,31 @@ export default function Home() {
                                             </div>
                                         </div>
 
+                                        {/* Applied Settings Chips */}
+                                        <div className="flex flex-wrap gap-2 pt-2">
+                                            <span className="bg-[#2d3a35]/80 px-3 py-1.5 rounded-full border border-[#ffffff]/10 text-sm font-medium text-[#e8e8e3] flex items-center gap-1.5 shadow-sm">
+                                                <span>🌬️</span> {handStatus.windField === 1 ? '동' : '남'}1국 / {handStatus.windPlayer === 1 ? '동' : handStatus.windPlayer === 2 ? '남' : handStatus.windPlayer === 3 ? '서' : '북'}가
+                                            </span>
+                                            <span className="bg-[#2d3a35]/80 px-3 py-1.5 rounded-full border border-[#ffffff]/10 text-sm font-medium text-[#e8e8e3] shadow-sm">
+                                                {handStatus.winType === 'tsumo' ? '🖐 쯔모' : '👉 론'}
+                                            </span>
+                                            {handStatus.doraCount > 0 && (
+                                                <span className="bg-[#4a3e1c]/80 px-3 py-1.5 rounded-full border border-[#d4af37]/30 text-sm font-bold text-[#d4af37] flex items-center gap-1.5 shadow-sm">
+                                                    <span>🌟</span> 도라 {handStatus.doraCount}
+                                                </span>
+                                            )}
+                                            {handStatus.honba > 0 && (
+                                                <span className="bg-[#2d3a35]/80 px-3 py-1.5 rounded-full border border-[#ffffff]/10 text-sm font-medium text-[#a3b8b0] shadow-sm">
+                                                    +{handStatus.honba} 본장
+                                                </span>
+                                            )}
+                                            {handStatus.riichi > 0 && (
+                                                <span className="bg-[#4a0e0e]/80 px-3 py-1.5 rounded-full border border-[#ff4444]/30 text-sm font-bold text-white flex items-center gap-1.5 shadow-sm">
+                                                    <span>🔥</span> {handStatus.riichi === 1 ? '리치' : '더블 리치'}
+                                                </span>
+                                            )}
+                                        </div>
+
                                         <div className="bg-black/30 rounded-xl border border-[#ffffff]/10 overflow-hidden backdrop-blur-sm">
                                             <div className="bg-[#ffffff]/5 px-6 py-3 text-lg font-semibold text-[#a3b8b0] flex items-center gap-2">
                                                 <span>📜</span> 적용된 역 (Yaku)
