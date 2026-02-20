@@ -361,134 +361,124 @@ export default function Home() {
                 </header>
 
                 {/* Match Settings Panel */}
-                <section className="bg-[#0f281e]/40 p-4 md:p-6 rounded-2xl border border-[#ffffff]/5 shadow-lg max-w-4xl mx-auto space-y-6">
-                    <h2 className="text-xl font-bold text-[#d4af37] border-b border-[#ffffff]/10 pb-2 flex items-center gap-2">
+                <section className="max-w-4xl mx-auto space-y-4 md:space-y-6">
+                    <h2 className="text-2xl font-black text-[#d4af37] pb-2 flex items-center gap-2 drop-shadow-md border-b border-[#ffffff]/10">
                         <span>⚙️</span> 대국 설정
                     </h2>
 
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                        {/* Winds & Win Type */}
-                        <div className="space-y-4">
-                            <div className="flex flex-col gap-2">
-                                <label className="text-sm text-[#a3b8b0] uppercase tracking-wider font-semibold">장풍 (Field Wind)</label>
-                                <div className="flex bg-[#1a2320] rounded-lg p-1">
-                                    <button onClick={() => setHandStatus({ ...handStatus, windField: 1 })} className={`flex-1 py-3 md:py-2 rounded-md transition text-base md:text-sm ${handStatus.windField === 1 ? 'bg-[#d4af37] text-black font-bold' : 'text-[#a3b8b0] hover:bg-[#2d3a35]'}`}>동 (East)</button>
-                                    <button onClick={() => setHandStatus({ ...handStatus, windField: 2 })} className={`flex-1 py-3 md:py-2 rounded-md transition text-base md:text-sm ${handStatus.windField === 2 ? 'bg-[#d4af37] text-black font-bold' : 'text-[#a3b8b0] hover:bg-[#2d3a35]'}`}>남 (South)</button>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6">
+                        {/* Card 1: 기본 흐름 (장풍, 자풍, 화료, 본장) */}
+                        <div className="bg-[#0f281e]/60 p-5 md:p-6 rounded-2xl border border-[#ffffff]/10 shadow-lg space-y-5 flex flex-col">
+                            <h3 className="text-lg font-bold text-[#e8e8e3] border-b border-[#ffffff]/10 pb-2 flex items-center gap-2">
+                                <span>🌬️</span> 기본 흐름
+                            </h3>
+
+                            <div className="space-y-4 flex-1">
+                                <div className="flex flex-col gap-2">
+                                    <label className="text-sm text-[#a3b8b0] uppercase tracking-wider font-semibold">장풍 (Field Wind)</label>
+                                    <div className="flex bg-[#1a2320] rounded-lg p-1">
+                                        <button onClick={() => setHandStatus({ ...handStatus, windField: 1 })} className={`flex-1 py-3 md:py-2 rounded-md transition text-base md:text-sm ${handStatus.windField === 1 ? 'bg-[#d4af37] text-black font-bold' : 'text-[#a3b8b0] hover:bg-[#2d3a35]'}`}>동 (East)</button>
+                                        <button onClick={() => setHandStatus({ ...handStatus, windField: 2 })} className={`flex-1 py-3 md:py-2 rounded-md transition text-base md:text-sm ${handStatus.windField === 2 ? 'bg-[#d4af37] text-black font-bold' : 'text-[#a3b8b0] hover:bg-[#2d3a35]'}`}>남 (South)</button>
+                                    </div>
+                                </div>
+
+                                <div className="flex flex-col gap-2">
+                                    <label className="text-sm text-[#a3b8b0] uppercase tracking-wider font-semibold">자풍 (Seat Wind)</label>
+                                    <div className="flex bg-[#1a2320] rounded-lg p-1">
+                                        <button onClick={() => setHandStatus({ ...handStatus, windPlayer: 1 })} className={`flex-1 py-3 md:py-2 rounded-md transition text-base md:text-sm ${handStatus.windPlayer === 1 ? 'bg-[#d4af37] text-black font-bold' : 'text-[#a3b8b0] hover:bg-[#2d3a35]'}`}>동 (친)</button>
+                                        <button onClick={() => setHandStatus({ ...handStatus, windPlayer: 2 })} className={`flex-1 py-3 md:py-2 rounded-md transition text-base md:text-sm ${handStatus.windPlayer === 2 ? 'bg-[#d4af37] text-black font-bold' : 'text-[#a3b8b0] hover:bg-[#2d3a35]'}`}>남 (자)</button>
+                                        <button onClick={() => setHandStatus({ ...handStatus, windPlayer: 3 })} className={`flex-1 py-3 md:py-2 rounded-md transition text-base md:text-sm ${handStatus.windPlayer === 3 ? 'bg-[#d4af37] text-black font-bold' : 'text-[#a3b8b0] hover:bg-[#2d3a35]'}`}>서 (자)</button>
+                                        <button onClick={() => setHandStatus({ ...handStatus, windPlayer: 4 })} className={`flex-1 py-3 md:py-2 rounded-md transition text-base md:text-sm ${handStatus.windPlayer === 4 ? 'bg-[#d4af37] text-black font-bold' : 'text-[#a3b8b0] hover:bg-[#2d3a35]'}`}>북 (자)</button>
+                                    </div>
+                                </div>
+
+                                <div className="flex items-center justify-between bg-[#1a2320] p-3 rounded-lg">
+                                    <label className="text-sm text-[#a3b8b0] font-semibold">화료 방법 (Win)</label>
+                                    <div className="flex gap-2">
+                                        <button onClick={() => setHandStatus({ ...handStatus, winType: 'tsumo' })} className={`px-4 py-2 md:py-1.5 rounded-md transition text-base md:text-sm ${handStatus.winType === 'tsumo' ? 'bg-[#2d3a35] text-[#d4af37] border border-[#d4af37]/50' : 'text-[#a3b8b0]'}`}>쯔모</button>
+                                        <button onClick={() => setHandStatus({ ...handStatus, winType: 'ron' })} className={`px-4 py-2 md:py-1.5 rounded-md transition text-base md:text-sm ${handStatus.winType === 'ron' ? 'bg-[#2d3a35] text-[#d4af37] border border-[#d4af37]/50' : 'text-[#a3b8b0]'}`}>론</button>
+                                    </div>
                                 </div>
                             </div>
 
-                            <div className="flex flex-col gap-2">
-                                <label className="text-sm text-[#a3b8b0] uppercase tracking-wider font-semibold">자풍 (Seat Wind)</label>
-                                <div className="flex bg-[#1a2320] rounded-lg p-1">
-                                    <button onClick={() => setHandStatus({ ...handStatus, windPlayer: 1 })} className={`flex-1 py-3 md:py-2 rounded-md transition text-base md:text-sm ${handStatus.windPlayer === 1 ? 'bg-[#d4af37] text-black font-bold' : 'text-[#a3b8b0] hover:bg-[#2d3a35]'}`}>동 (친)</button>
-                                    <button onClick={() => setHandStatus({ ...handStatus, windPlayer: 2 })} className={`flex-1 py-3 md:py-2 rounded-md transition text-base md:text-sm ${handStatus.windPlayer === 2 ? 'bg-[#d4af37] text-black font-bold' : 'text-[#a3b8b0] hover:bg-[#2d3a35]'}`}>남 (자)</button>
-                                    <button onClick={() => setHandStatus({ ...handStatus, windPlayer: 3 })} className={`flex-1 py-3 md:py-2 rounded-md transition text-base md:text-sm ${handStatus.windPlayer === 3 ? 'bg-[#d4af37] text-black font-bold' : 'text-[#a3b8b0] hover:bg-[#2d3a35]'}`}>서 (자)</button>
-                                    <button onClick={() => setHandStatus({ ...handStatus, windPlayer: 4 })} className={`flex-1 py-3 md:py-2 rounded-md transition text-base md:text-sm ${handStatus.windPlayer === 4 ? 'bg-[#d4af37] text-black font-bold' : 'text-[#a3b8b0] hover:bg-[#2d3a35]'}`}>북 (자)</button>
+                            <div className="mt-auto pt-4 flex items-center justify-between border-t border-[#ffffff]/10">
+                                <label className="text-sm text-[#a3b8b0] font-semibold flex items-center gap-2">본장 (Honba)</label>
+                                <div className="flex items-center gap-3">
+                                    <button onClick={() => setHandStatus({ ...handStatus, honba: Math.max(0, handStatus.honba - 1) })} className="w-10 h-10 md:w-8 md:h-8 rounded-full bg-[#1a2320] text-white flex items-center justify-center hover:bg-[#3e524b] text-xl md:text-base border border-[#ffffff]/10">-</button>
+                                    <span className="text-2xl md:text-xl font-bold text-[#d4af37] w-5 text-center">{handStatus.honba}</span>
+                                    <button onClick={() => setHandStatus({ ...handStatus, honba: handStatus.honba + 1 })} className="w-10 h-10 md:w-8 md:h-8 rounded-full bg-[#1a2320] text-white flex items-center justify-center hover:bg-[#3e524b] text-xl md:text-base border border-[#ffffff]/10">+</button>
                                 </div>
                             </div>
                         </div>
 
-                        {/* Modifiers & Counters */}
-                        <div className="space-y-4">
-                            <div className="flex items-center justify-between bg-[#1a2320] p-3 rounded-lg">
-                                <label className="text-sm text-[#a3b8b0] font-semibold">화료 방법 (Win Type)</label>
-                                <div className="flex gap-2">
-                                    <button onClick={() => setHandStatus({ ...handStatus, winType: 'tsumo' })} className={`px-4 py-2 md:py-1.5 rounded-md transition text-base md:text-sm ${handStatus.winType === 'tsumo' ? 'bg-[#2d3a35] text-[#d4af37] border border-[#d4af37]/50' : 'text-[#a3b8b0]'}`}>쯔모 (Tsumo)</button>
-                                    <button onClick={() => setHandStatus({ ...handStatus, winType: 'ron' })} className={`px-4 py-2 md:py-1.5 rounded-md transition text-base md:text-sm ${handStatus.winType === 'ron' ? 'bg-[#2d3a35] text-[#d4af37] border border-[#d4af37]/50' : 'text-[#a3b8b0]'}`}>론 (Ron)</button>
-                                </div>
-                            </div>
+                        {/* Card 2: 역 조건 & 도라 */}
+                        <div className="bg-[#0f281e]/60 p-5 md:p-6 rounded-2xl border border-[#ffffff]/10 shadow-lg space-y-5 flex flex-col">
+                            <h3 className="text-lg font-bold text-[#e8e8e3] border-b border-[#ffffff]/10 pb-2 flex items-center gap-2">
+                                <span>✨</span> 역 보너스 & 도라
+                            </h3>
 
-                            <div className="flex items-center justify-between bg-[#1a2320] p-3 rounded-lg">
-                                <label className="text-sm text-[#a3b8b0] font-semibold">리치 (Riichi)</label>
-                                <div className="flex gap-2">
-                                    <button onClick={() => {
-                                        let updated = { ...handStatus, riichi: 0 as 0 | 1 | 2 };
-                                        if (handStatus.isIppatsu) updated.isIppatsu = false; // Disable Ippatsu if Riichi is turned off
-                                        setHandStatus(updated);
-                                    }} className={`px-3 py-2 md:py-1.5 rounded-md transition text-base md:text-sm ${handStatus.riichi === 0 ? 'bg-[#2d3a35] text-white' : 'text-[#a3b8b0]'}`}>없음</button>
-                                    <button onClick={() => setHandStatus({ ...handStatus, riichi: 1 })} className={`px-3 py-2 md:py-1.5 rounded-md transition text-base md:text-sm ${handStatus.riichi === 1 ? 'bg-[#8a1c1c] text-white font-bold' : 'text-[#a3b8b0]'}`}>리치</button>
-                                    <button onClick={() => setHandStatus({ ...handStatus, riichi: 2 })} className={`px-3 py-2 md:py-1.5 rounded-md transition text-base md:text-sm ${handStatus.riichi === 2 ? 'bg-[#8a1c1c] text-white font-bold' : 'text-[#a3b8b0]'}`}>더블 리치</button>
-                                </div>
-                            </div>
-
-                            <div className="flex gap-4">
-                                <div className="flex-1 flex items-center justify-between bg-[#1a2320] p-3 rounded-lg">
-                                    <label className="text-sm text-[#a3b8b0] font-semibold">도라 (Dora)</label>
-                                    <div className="flex items-center gap-3">
-                                        <button onClick={() => setHandStatus({ ...handStatus, doraCount: Math.max(0, handStatus.doraCount - 1) })} className="w-10 h-10 md:w-8 md:h-8 rounded-full bg-[#2d3a35] text-white flex items-center justify-center hover:bg-[#3e524b] text-xl md:text-base">-</button>
-                                        <span className="text-2xl md:text-xl font-bold text-[#d4af37] w-5 text-center">{handStatus.doraCount}</span>
-                                        <button onClick={() => setHandStatus({ ...handStatus, doraCount: handStatus.doraCount + 1 })} className="w-10 h-10 md:w-8 md:h-8 rounded-full bg-[#2d3a35] text-white flex items-center justify-center hover:bg-[#3e524b] text-xl md:text-base">+</button>
+                            <div className="space-y-4 flex-1">
+                                <div className="flex flex-col gap-2">
+                                    <label className="text-sm text-[#a3b8b0] uppercase tracking-wider font-semibold">리치 (Riichi)</label>
+                                    <div className="flex bg-[#1a2320] rounded-lg p-1">
+                                        <button onClick={() => {
+                                            let updated = { ...handStatus, riichi: 0 as 0 | 1 | 2 };
+                                            if (handStatus.isIppatsu) updated.isIppatsu = false;
+                                            setHandStatus(updated);
+                                        }} className={`flex-1 py-3 md:py-2 rounded-md transition text-base md:text-sm ${handStatus.riichi === 0 ? 'bg-[#2d3a35] text-white' : 'text-[#a3b8b0] hover:bg-[#2d3a35]'}`}>없음</button>
+                                        <button onClick={() => setHandStatus({ ...handStatus, riichi: 1 })} className={`flex-1 py-3 md:py-2 rounded-md transition text-base md:text-sm ${handStatus.riichi === 1 ? 'bg-[#8a1c1c] text-white font-bold border border-[#ff4444]/30' : 'text-[#a3b8b0] hover:bg-[#2d3a35]'}`}>리치 (+1)</button>
+                                        <button onClick={() => setHandStatus({ ...handStatus, riichi: 2 })} className={`flex-1 py-3 md:py-2 rounded-md transition text-base md:text-sm ${handStatus.riichi === 2 ? 'bg-[#8a1c1c] text-white font-bold border border-[#ff4444]/30' : 'text-[#a3b8b0] hover:bg-[#2d3a35]'}`}>더블 리치 (+2)</button>
                                     </div>
                                 </div>
-                                <div className="flex-1 flex items-center justify-between bg-[#1a2320] p-3 rounded-lg">
-                                    <label className="text-sm text-[#a3b8b0] font-semibold">본장 (Honba)</label>
-                                    <div className="flex items-center gap-3">
-                                        <button onClick={() => setHandStatus({ ...handStatus, honba: Math.max(0, handStatus.honba - 1) })} className="w-10 h-10 md:w-8 md:h-8 rounded-full bg-[#2d3a35] text-white flex items-center justify-center hover:bg-[#3e524b] text-xl md:text-base">-</button>
-                                        <span className="text-2xl md:text-xl font-bold text-[#d4af37] w-5 text-center">{handStatus.honba}</span>
-                                        <button onClick={() => setHandStatus({ ...handStatus, honba: handStatus.honba + 1 })} className="w-10 h-10 md:w-8 md:h-8 rounded-full bg-[#2d3a35] text-white flex items-center justify-center hover:bg-[#3e524b] text-xl md:text-base">+</button>
+
+                                <div className="flex flex-col gap-2 pt-2">
+                                    <label className="text-sm text-[#a3b8b0] uppercase tracking-wider font-semibold">추가 상황 (토글)</label>
+                                    <div className="flex flex-wrap gap-2">
+                                        <button
+                                            disabled={handStatus.riichi === 0}
+                                            onClick={() => setHandStatus({ ...handStatus, isIppatsu: !handStatus.isIppatsu })}
+                                            className={`px-4 py-2 rounded-full text-sm font-semibold border transition-all ${handStatus.riichi > 0
+                                                ? (handStatus.isIppatsu ? 'bg-[#d4af37] text-black border-[#d4af37] shadow-[0_0_10px_rgba(212,175,55,0.3)]' : 'bg-[#1a2320] text-[#a3b8b0] border-[#ffffff]/10 hover:border-[#ffffff]/30 hover:bg-[#2d3a35]')
+                                                : 'bg-[#1a2320] text-[#a3b8b0]/30 border-transparent cursor-not-allowed'}`}
+                                        >
+                                            일발 (+1)
+                                        </button>
+
+                                        <button
+                                            disabled={handStatus.winType !== 'ron'}
+                                            onClick={() => setHandStatus({ ...handStatus, isChankan: !handStatus.isChankan })}
+                                            className={`px-4 py-2 rounded-full text-sm font-semibold border transition-all ${handStatus.winType === 'ron'
+                                                ? (handStatus.isChankan ? 'bg-[#d4af37] text-black border-[#d4af37] shadow-[0_0_10px_rgba(212,175,55,0.3)]' : 'bg-[#1a2320] text-[#a3b8b0] border-[#ffffff]/10 hover:border-[#ffffff]/30 hover:bg-[#2d3a35]')
+                                                : 'bg-[#1a2320] text-[#a3b8b0]/30 border-transparent cursor-not-allowed'}`}
+                                        >
+                                            창깡 (+1)
+                                        </button>
+
+                                        <button
+                                            onClick={() => setHandStatus({ ...handStatus, isRinshan: !handStatus.isRinshan })}
+                                            className={`px-4 py-2 rounded-full text-sm font-semibold border transition-all ${handStatus.isRinshan ? 'bg-[#d4af37] text-black border-[#d4af37] shadow-[0_0_10px_rgba(212,175,55,0.3)]' : 'bg-[#1a2320] text-[#a3b8b0] border-[#ffffff]/10 hover:border-[#ffffff]/30 hover:bg-[#2d3a35]'}`}
+                                        >
+                                            영상개화 (+1)
+                                        </button>
+
+                                        <button
+                                            onClick={() => setHandStatus({ ...handStatus, isHaiteiHoutei: !handStatus.isHaiteiHoutei })}
+                                            className={`px-4 py-2 rounded-full text-sm font-semibold border transition-all ${handStatus.isHaiteiHoutei ? 'bg-[#d4af37] text-black border-[#d4af37] shadow-[0_0_10px_rgba(212,175,55,0.3)]' : 'bg-[#1a2320] text-[#a3b8b0] border-[#ffffff]/10 hover:border-[#ffffff]/30 hover:bg-[#2d3a35]'}`}
+                                        >
+                                            해저/하저 (+1)
+                                        </button>
                                     </div>
                                 </div>
                             </div>
-                        </div>
-                    </div>
 
-                    {/* Additional Yaku Options */}
-                    <div className="mt-6 pt-6 border-t border-[#ffffff]/10">
-                        <h3 className="text-sm text-[#a3b8b0] uppercase tracking-wider font-semibold mb-4">판수 보너스 옵션</h3>
-                        <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-                            <label className={`flex items-center gap-2 p-3 rounded-lg border transition cursor-pointer ${handStatus.riichi > 0 ? (handStatus.isIppatsu ? 'bg-[#2d3a35] border-[#d4af37]/50' : 'bg-[#1a2320] border-transparent hover:border-[#ffffff]/20') : 'opacity-50 cursor-not-allowed bg-[#1a2320] border-transparent'}`}>
-                                <input
-                                    type="checkbox"
-                                    disabled={handStatus.riichi === 0}
-                                    checked={handStatus.isIppatsu}
-                                    onChange={(e) => setHandStatus({ ...handStatus, isIppatsu: e.target.checked })}
-                                    className="w-5 h-5 accent-[#d4af37]"
-                                />
-                                <div className="flex flex-col">
-                                    <span className="font-semibold text-[#e8e8e3]">일발</span>
-                                    <span className="text-xs text-[#d4af37]">+1판</span>
+                            <div className="mt-auto pt-4 flex items-center justify-between border-t border-[#ffffff]/10">
+                                <label className="text-sm text-[#a3b8b0] font-semibold flex items-center gap-2">도라 (Dora)</label>
+                                <div className="flex items-center gap-3">
+                                    <button onClick={() => setHandStatus({ ...handStatus, doraCount: Math.max(0, handStatus.doraCount - 1) })} className="w-10 h-10 md:w-8 md:h-8 rounded-full bg-[#1a2320] text-white flex items-center justify-center hover:bg-[#3e524b] text-xl md:text-base border border-[#ffffff]/10">-</button>
+                                    <span className="text-2xl md:text-xl font-bold text-[#d4af37] w-5 text-center">{handStatus.doraCount}</span>
+                                    <button onClick={() => setHandStatus({ ...handStatus, doraCount: handStatus.doraCount + 1 })} className="w-10 h-10 md:w-8 md:h-8 rounded-full bg-[#1a2320] text-white flex items-center justify-center hover:bg-[#3e524b] text-xl md:text-base border border-[#ffffff]/10">+</button>
                                 </div>
-                            </label>
-
-                            <label className={`flex items-center gap-2 p-3 rounded-lg border transition cursor-pointer ${handStatus.winType === 'ron' ? (handStatus.isChankan ? 'bg-[#2d3a35] border-[#d4af37]/50' : 'bg-[#1a2320] border-transparent hover:border-[#ffffff]/20') : 'opacity-50 cursor-not-allowed bg-[#1a2320] border-transparent'}`}>
-                                <input
-                                    type="checkbox"
-                                    disabled={handStatus.winType !== 'ron'}
-                                    checked={handStatus.isChankan}
-                                    onChange={(e) => setHandStatus({ ...handStatus, isChankan: e.target.checked })}
-                                    className="w-5 h-5 accent-[#d4af37]"
-                                />
-                                <div className="flex flex-col">
-                                    <span className="font-semibold text-[#e8e8e3]">창깡</span>
-                                    <span className="text-xs text-[#d4af37]">+1판</span>
-                                </div>
-                            </label>
-
-                            <label className={`flex items-center gap-2 p-3 rounded-lg border transition cursor-pointer ${handStatus.isRinshan ? 'bg-[#2d3a35] border-[#d4af37]/50' : 'bg-[#1a2320] border-transparent hover:border-[#ffffff]/20'}`}>
-                                <input
-                                    type="checkbox"
-                                    checked={handStatus.isRinshan}
-                                    onChange={(e) => setHandStatus({ ...handStatus, isRinshan: e.target.checked })}
-                                    className="w-5 h-5 accent-[#d4af37]"
-                                />
-                                <div className="flex flex-col">
-                                    <span className="font-semibold text-[#e8e8e3]">영상개화</span>
-                                    <span className="text-xs text-[#d4af37]">+1판</span>
-                                </div>
-                            </label>
-
-                            <label className={`flex items-center gap-2 p-3 rounded-lg border transition cursor-pointer ${handStatus.isHaiteiHoutei ? 'bg-[#2d3a35] border-[#d4af37]/50' : 'bg-[#1a2320] border-transparent hover:border-[#ffffff]/20'}`}>
-                                <input
-                                    type="checkbox"
-                                    checked={handStatus.isHaiteiHoutei}
-                                    onChange={(e) => setHandStatus({ ...handStatus, isHaiteiHoutei: e.target.checked })}
-                                    className="w-5 h-5 accent-[#d4af37]"
-                                />
-                                <div className="flex flex-col">
-                                    <span className="font-semibold text-[#e8e8e3]">해저/하저</span>
-                                    <span className="text-xs text-[#d4af37]">+1판</span>
-                                </div>
-                            </label>
+                            </div>
                         </div>
                     </div>
                 </section>
