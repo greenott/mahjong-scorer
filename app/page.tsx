@@ -1,7 +1,7 @@
 
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Tile as TileComponent } from '@/components/Tile';
 import { TILES, Tile, handToRiichiString, HandStatus, Furo, FuroType } from '@/utils/mahjong';
 
@@ -169,6 +169,26 @@ export default function Home() {
 
     const [furoSets, setFuroSets] = useState<Furo[]>([]);
     const [selectedTiles, setSelectedTiles] = useState<string[]>([]); // To track tiles selected for making a set
+
+    // Scroll Lock when modal is open
+    useEffect(() => {
+        if (result || error) {
+            document.body.style.overflow = 'hidden';
+            // Prevent mobile safari scroll bouncing on body
+            document.body.style.position = 'fixed';
+            document.body.style.width = '100%';
+        } else {
+            document.body.style.overflow = '';
+            document.body.style.position = '';
+            document.body.style.width = '';
+        }
+
+        return () => {
+            document.body.style.overflow = '';
+            document.body.style.position = '';
+            document.body.style.width = '';
+        };
+    }, [result, error]);
 
     // Group tiles by type for display
     const tilesByType = {
@@ -549,11 +569,14 @@ export default function Home() {
                     </div>
                 </section>
 
-                {/* Error Modal */}
+                {/* Error Modal - Overlay Style */}
                 {
                     error && (
-                        <div className="fixed inset-0 z-[60] flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm animate-in fade-in duration-200" onClick={() => setError(null)}>
-                            <div className="bg-[#1a1a1a] max-w-md w-full rounded-2xl border border-[#ff4444]/50 shadow-[0_0_50px_rgba(255,68,68,0.2)] overflow-hidden relative p-8 text-center" onClick={e => e.stopPropagation()}>
+                        <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center p-0 sm:p-4 bg-black/80 backdrop-blur-md animate-in fade-in duration-300" onClick={() => setError(null)}>
+                            <div className="bg-[#1a1a1a] max-w-md w-full rounded-t-3xl sm:rounded-2xl border border-[#ff4444]/50 shadow-[0_0_50px_rgba(255,68,68,0.2)] overflow-hidden relative animate-in slide-in-from-bottom-full sm:slide-in-from-bottom-0 pb-6 sm:pb-0" onClick={e => e.stopPropagation()}>
+                                {/* Mobile Handle */}
+                                <div className="sm:hidden w-12 h-1.5 bg-white/20 rounded-full mx-auto mt-3 mb-1"></div>
+                                {/* Close Button */}
                                 <button onClick={() => setError(null)} className="absolute top-4 right-4 text-[#a3b8b0] hover:text-white transition-colors">
                                     <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
@@ -573,18 +596,20 @@ export default function Home() {
                 {/* Result Modal - Overlay Style */}
                 {
                     result && (
-                        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-md animate-in fade-in duration-300" onClick={() => setResult(null)}>
-                            <div className="bg-[#1a1a1a] max-w-4xl w-full rounded-2xl border border-[#d4af37]/50 shadow-[0_0_50px_rgba(212,175,55,0.2)] overflow-hidden relative" onClick={e => e.stopPropagation()}>
+                        <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center p-0 sm:p-4 bg-black/80 backdrop-blur-md animate-in fade-in duration-300" onClick={() => setResult(null)}>
+                            <div className="bg-[#1a1a1a] max-w-4xl w-full max-h-[90vh] overflow-y-auto rounded-t-3xl sm:rounded-2xl border border-[#d4af37]/50 shadow-[0_0_50px_rgba(212,175,55,0.2)] relative animate-in slide-in-from-bottom-full sm:slide-in-from-bottom-0 pb-8 sm:pb-0 scrollbar-thin scrollbar-thumb-[#d4af37]/50 scrollbar-track-transparent" onClick={e => e.stopPropagation()}>
+                                {/* Mobile Handle */}
+                                <div className="sm:hidden w-12 h-1.5 bg-white/20 rounded-full mx-auto mt-3 mb-1 sticky top-3 z-50"></div>
 
                                 {/* Close Button */}
-                                <button onClick={() => setResult(null)} className="absolute top-4 right-4 text-[#a3b8b0] hover:text-white transition-colors">
+                                <button onClick={() => setResult(null)} className="absolute top-4 right-4 text-[#a3b8b0] hover:text-white transition-colors z-50 bg-black/50 sm:bg-transparent rounded-full p-1 sm:p-0">
                                     <svg xmlns="http://www.w3.org/2000/svg" className="h-8 w-8" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
                                     </svg>
                                 </button>
 
-                                <div className="bg-gradient-to-r from-[#2d1b18] to-[#3e2723] p-8 border-b border-[#d4af37]/30">
-                                    <h3 className="text-3xl font-bold bg-gradient-to-r from-[#d4af37] to-[#f7e7ce] bg-clip-text text-transparent drop-shadow-sm text-center mb-4">
+                                <div className="bg-gradient-to-r from-[#2d1b18] to-[#3e2723] p-6 sm:p-8 border-b border-[#d4af37]/30">
+                                    <h3 className="text-2xl sm:text-3xl font-bold bg-gradient-to-r from-[#d4af37] to-[#f7e7ce] bg-clip-text text-transparent drop-shadow-sm text-center mb-0 mt-2 sm:mt-0 sm:mb-4">
                                         {result.isAgari ? (result.name ? (YakuNameMap[result.name] || result.name) : '화료 (Win)') : '점수 없음'}
                                     </h3>
                                 </div>
@@ -676,14 +701,14 @@ export default function Home() {
                 }
 
                 {/* Tile Selection Palette */}
-                <section className="grid grid-cols-1 gap-8">
+                <section className="grid grid-cols-1 gap-6 sm:gap-8">
                     {Object.entries(tilesByType).map(([type, tiles]) => (
-                        <div key={type} className="bg-[#0f281e]/40 p-6 md:p-8 rounded-2xl border border-[#ffffff]/5 relative overflow-hidden group hover:bg-[#0f281e]/60 transition-colors duration-300">
-                            <h3 className="text-2xl font-bold mb-6 text-[#d4af37] flex items-center justify-center gap-4 border-b border-[#ffffff]/10 pb-4">
-                                <span className={`w-2 h-8 rounded-full ${type === 'man' ? 'bg-[#8a1c1c]' : type === 'pin' ? 'bg-[#1c3d5c]' : type === 'sou' ? 'bg-[#1c5c2e]' : 'bg-[#d4af37]'}`}></span>
+                        <div key={type} className="bg-[#0f281e]/40 p-4 sm:p-6 md:p-8 rounded-2xl border border-[#ffffff]/5 relative overflow-hidden group hover:bg-[#0f281e]/60 transition-colors duration-300">
+                            <h3 className="text-xl sm:text-2xl font-bold mb-4 sm:mb-6 text-[#d4af37] flex items-center justify-center gap-4 border-b border-[#ffffff]/10 pb-4">
+                                <span className={`w-2 h-6 sm:h-8 rounded-full ${type === 'man' ? 'bg-[#8a1c1c]' : type === 'pin' ? 'bg-[#1c3d5c]' : type === 'sou' ? 'bg-[#1c5c2e]' : 'bg-[#d4af37]'}`}></span>
                                 {getTypeLabel(type)}
                             </h3>
-                            <div className="flex flex-wrap gap-3 md:gap-5 justify-center">
+                            <div className="flex flex-wrap gap-2 sm:gap-3 md:gap-5 justify-center">
                                 {tiles.map((tile) => (
                                     <TileComponent
                                         key={tile.symbol}
