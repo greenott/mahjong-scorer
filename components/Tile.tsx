@@ -37,7 +37,7 @@ export function Tile({ tile, onClick, selected, className = '' }: TileProps) {
             <div className="absolute inset-0 bg-gradient-to-br from-white/80 to-transparent rounded-lg pointer-events-none" />
 
             <span className={`
-                relative z-10 
+                relative z-10 mt-1 md:mt-1.5
                 ${tile.type === 'man' ? 'text-[#8a1c1c]' :
                     tile.type === 'sou' ? 'text-[#1c5c2e]' :
                         tile.type === 'pin' ? 'text-[#1c3d5c]' :
